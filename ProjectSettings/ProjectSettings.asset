@@ -762,10 +762,10 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: 8cd465f9-23f3-46de-addd-e1068770e48c
+  cloudProjectId: aadb6279-c4b1-44d7-a664-a10c1e6ca330
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: YCJN
+  projectName: You Can Jump Now
   organizationId: unity_1trkkwfpdnmtwq
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
