@@ -27,6 +27,22 @@ public class PlayerNetwork : NetworkBehaviour
         inputActions = new PlayerInputActions();
     }
 
+    protected void OnEnable()
+    {
+        inputActions.Enable();
+        moveAction = inputActions.PlayerControls.move;
+
+        jumpAction = inputActions.PlayerControls.jump;
+
+        inputActions.PlayerControls.jump.performed += OnJump;
+    }
+
+    protected void OnDisable()
+    {
+        inputActions.PlayerControls.jump.performed -= OnJump;
+        inputActions.Disable();
+    }
+
     protected void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -34,14 +50,14 @@ public class PlayerNetwork : NetworkBehaviour
 
     protected void Update()
     {
-        //Check if client is owner. If it's not, it can't move the player
-        if (!IsOwner || isDebugScene) return;
-        HandleMovement();
+        HandleNetworkMovement();
 
     }
 
-    private void HandleMovement()
+    private void HandleNetworkMovement()
     {
+        //Check if client is owner. If it's not, it can't move the player
+        if (!IsOwner && !isDebugScene) return;
         moveInput = moveAction.ReadValue<Vector2>();
         Vector3 movement = new Vector3(moveInput.x, moveInput.y, 0) * moveSpeed * Time.deltaTime;
         transform.position += movement;
@@ -61,27 +77,11 @@ public class PlayerNetwork : NetworkBehaviour
         }
     }
 
-    protected void OnEnable()
-    {
-        inputActions.Enable();
-        moveAction = inputActions.PlayerControls.move;
-
-        jumpAction = inputActions.PlayerControls.jump;
-
-        //inputActions.PlayerControls.jump.performed += OnJump;
-    }
-
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (!IsOwner || isDebugScene) return;
+        if (!IsOwner && !isDebugScene) return;
         rb.velocity = Vector2.up * jumpForce;
 
-    }
-
-    protected void OnDisable()
-    {
-        //inputActions.PlayerControls.jump.performed -= OnJump;
-        inputActions.Disable();
     }
 
     //[ServerRpc]
