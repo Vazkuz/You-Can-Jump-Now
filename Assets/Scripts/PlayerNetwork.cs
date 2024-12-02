@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
@@ -12,6 +13,15 @@ public class PlayerNetwork : NetworkBehaviour
 
     [SerializeField] private Transform spawnedObjectPrefab;
     private Transform spawnedObjectTransform;
+
+    [Header("Player Movement")]
+    [SerializeField] float jumpForce = 50f;
+    [SerializeField] float fallMultiplier = 2.5f;
+    [SerializeField] float lowJumpMultiplier = 2f;
+    InputAction moveAction;
+    InputAction jumpAction;
+    private Vector2 moveInput;
+    private new Rigidbody2D rb;
 
     private NetworkVariable<prueba> randomNumber = new NetworkVariable<prueba>(
         new prueba
@@ -35,7 +45,6 @@ public class PlayerNetwork : NetworkBehaviour
         }
     }
 
-    private Vector2 moveInput;
 
     public override void OnNetworkSpawn()
     {
@@ -51,44 +60,66 @@ public class PlayerNetwork : NetworkBehaviour
         inputActions = new PlayerInputActions();
     }
 
+    protected void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
     protected void Update()
     {
         //Check if client is owner. If it's not, it can't move the player
         if (!IsOwner) return;
+        HandleMovement();
+
+    }
+
+    private void HandleMovement()
+    {
+        moveInput = moveAction.ReadValue<Vector2>();
         Vector3 movement = new Vector3(moveInput.x, moveInput.y, 0) * moveSpeed * Time.deltaTime;
         transform.position += movement;
-        //test
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            spawnedObjectTransform = Instantiate(spawnedObjectPrefab);
-            spawnedObjectTransform.GetComponent<NetworkObject>().Spawn(true);
-            //TestClientRpc();
-            //TestServerRpc();
-            //randomNumber.Value = new prueba
-            //{
-            //    _int = 10,
-            //    _bool = false,
-            //    message = "Gaaaaa"
-            //};
-        }
 
-        if (Input.GetKeyDown(KeyCode.I))
+        HandleJump();
+    }
+
+    private void HandleJump()
+    {
+        if (rb.velocity.y < 0)
         {
-            Destroy(spawnedObjectTransform.gameObject);
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
         }
+        else if(rb.velocity.y > 0 && !jumpAction.IsPressed())
+        {
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+        }
+        //rb.velocity = Vector2.up * jumpForce;
     }
 
     protected void OnEnable()
     {
         inputActions.Enable();
-        inputActions.PlayerControls.move.performed += OnMove;
-        inputActions.PlayerControls.move.canceled += OnMove;
+        moveAction = inputActions.PlayerControls.move;
+
+        jumpAction = inputActions.PlayerControls.jump;
+
+        inputActions.PlayerControls.jump.performed += OnJump;
+        //inputActions.PlayerControls.jump. = () =>
+        //{
+        //    print("jumping");
+        //}
+    }
+
+    private void OnJump(InputAction.CallbackContext context)
+    {
+        if (!IsOwner) return;
+        rb.velocity = Vector2.up * jumpForce;
+        //rigidbody2D.AddForce(jumpForce2D, ForceMode2D.Impulse);
+
     }
 
     protected void OnDisable()
     {
-        inputActions.PlayerControls.move.performed -= OnMove;
-        inputActions.PlayerControls.move.canceled -= OnMove;
+        inputActions.PlayerControls.jump.performed -= OnJump;
         inputActions.Disable();
     }
 
@@ -96,7 +127,6 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (!IsOwner) return;
         moveInput = context.ReadValue<Vector2>();
-        print(OwnerClientId);
     }
 
     [ServerRpc]
