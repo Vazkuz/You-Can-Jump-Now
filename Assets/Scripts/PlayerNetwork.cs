@@ -60,8 +60,8 @@ public class PlayerNetwork : NetworkBehaviour
         //Check if client is owner. If it's not, it can't move the player
         if (!IsOwner && !isDebugScene) return;
         moveInput = moveAction.ReadValue<Vector2>();
-        Vector3 movement = new Vector3(moveInput.x, moveInput.y, 0) * moveSpeed * Time.deltaTime;
-        transform.position += movement;
+
+        rb.velocity = Vector2.right * moveInput.x * moveSpeed + Vector2.up * rb.velocity.y;
 
         HandleJump();
     }
@@ -70,7 +70,7 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (rb.velocity.y < 0)
         {
-            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+            rb.velocity +=  Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
         }
         else if(rb.velocity.y > 0 && !jumpAction.IsPressed())
         {
@@ -88,7 +88,8 @@ public class PlayerNetwork : NetworkBehaviour
 
     public void OnCollisionEnter2D(Collision2D collision)
     {
-        print("colision!");
+        print("First point: " + collision.GetContact(0).point);
+        print("Second point: " + collision.GetContact(1).point);
     }
 
     //[ServerRpc]
