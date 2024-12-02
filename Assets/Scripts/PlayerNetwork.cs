@@ -11,12 +11,13 @@ public class PlayerNetwork : NetworkBehaviour
     [Header("Debug")]
     [SerializeField] bool isDebugScene = false;
 
-    [Header("Player Movement")]
+    [Header("Player Movement Vars")]
     [SerializeField] private float moveSpeed = 3f;
     private PlayerInputActions inputActions;
     [SerializeField] float jumpForce = 50f;
     [SerializeField] float fallMultiplier = 2.5f;
     [SerializeField] float lowJumpMultiplier = 2f;
+    [SerializeField] bool isGrounded; //BORRAR LUEGO, SOLO PARA DEBUG
     InputAction moveAction;
     InputAction jumpAction;
     private Vector2 moveInput;
@@ -80,8 +81,14 @@ public class PlayerNetwork : NetworkBehaviour
     private void OnJump(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
+        if (isGrounded) return;
         rb.velocity = Vector2.up * jumpForce;
 
+    }
+
+    public void OnCollisionEnter2D(Collision2D collision)
+    {
+        print("colision!");
     }
 
     //[ServerRpc]
