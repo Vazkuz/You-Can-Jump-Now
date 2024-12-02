@@ -219,6 +219,10 @@ PrefabInstance:
       propertyPath: lowJumpMultiplier
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 7753299618104902479, guid: e7cf7855c3a5e744f8b853a3942243d8, type: 3}
+      propertyPath: m_IncludeLayers.m_Bits
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8581655699337731944, guid: e7cf7855c3a5e744f8b853a3942243d8, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1627808070
@@ -692,7 +696,7 @@ BoxCollider2D:
   m_GameObject: {fileID: 1509360200}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: ef9f51374ce9ad14abf5370698d75076, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -822,7 +826,7 @@ BoxCollider2D:
   m_GameObject: {fileID: 1539300241}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: ef9f51374ce9ad14abf5370698d75076, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
