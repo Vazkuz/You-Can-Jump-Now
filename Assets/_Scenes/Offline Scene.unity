@@ -550,7 +550,7 @@ GameObject:
   - component: {fileID: 1104785633}
   - component: {fileID: 1104785634}
   - component: {fileID: 1104785635}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -680,7 +680,7 @@ GameObject:
   - component: {fileID: 1509360203}
   - component: {fileID: 1509360202}
   - component: {fileID: 1509360201}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: PH_Obstacle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -810,7 +810,7 @@ GameObject:
   - component: {fileID: 1539300244}
   - component: {fileID: 1539300243}
   - component: {fileID: 1539300242}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: PH_Obstacle2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
