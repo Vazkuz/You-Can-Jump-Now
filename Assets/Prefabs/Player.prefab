@@ -159,6 +159,11 @@ MonoBehaviour:
   jumpForce: 8
   fallMultiplier: 2.5
   lowJumpMultiplier: 2
+  boxSize: {x: 0.48, y: 0.25}
+  castDistance: 0.45
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!114 &-3340672397291402816
 MonoBehaviour:
   m_ObjectHideFlags: 0

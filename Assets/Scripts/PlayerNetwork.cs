@@ -17,11 +17,16 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] float jumpForce = 50f;
     [SerializeField] float fallMultiplier = 2.5f;
     [SerializeField] float lowJumpMultiplier = 2f;
-    [SerializeField] bool isGrounded; //BORRAR LUEGO, SOLO PARA DEBUG
     InputAction moveAction;
     InputAction jumpAction;
     private Vector2 moveInput;
     private new Rigidbody2D rb;
+
+    [Header("Ground Variables")]
+    //[SerializeField] bool isGrounded = false; //BORRAR LUEGO, SOLO PARA DEBUG
+    [SerializeField] private Vector2 boxSize;
+    [SerializeField] private float castDistance;
+    [SerializeField] private LayerMask groundLayer;
 
     protected void Awake()
     {
@@ -81,16 +86,33 @@ public class PlayerNetwork : NetworkBehaviour
     private void OnJump(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
-        if (isGrounded) return;
+        if (!IsGrounded()) return;
         rb.velocity = Vector2.up * jumpForce;
 
     }
 
-    public void OnCollisionEnter2D(Collision2D collision)
+    public bool IsGrounded()
     {
-        print("First point: " + collision.GetContact(0).point);
-        print("Second point: " + collision.GetContact(1).point);
+        return Physics2D.BoxCast(transform.position, boxSize, 0, -transform.up, castDistance, groundLayer);
     }
+
+    protected void OnDrawGizmos()
+    {
+        Gizmos.DrawWireCube(transform.position - transform.up * castDistance, boxSize);
+    }
+
+    //protected void OnCollisionEnter2D(Collision2D other)
+    //{
+    //    //se puede usar tag, pero por ahora no lo hare. Revisitar esta decision mas adelante.
+    //    Vector3 normal = other.GetContact(0).normal;
+    //    if (normal == Vector3.up) isGrounded = true;
+    //}
+
+    //protected void OnCollisionExit2D(Collision2D other)
+    //{
+    //    //se puede usar tag, pero por ahora no lo hare. Revisitar esta decision mas adelante.
+    //    isGrounded = false;
+    //}
 
     //[ServerRpc]
     //private void TestServerRpc()
