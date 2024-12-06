@@ -155,11 +155,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isDebugScene: 0
-  moveSpeed: 6
-  jumpForce: 8
-  fallMultiplier: 2.5
-  lowJumpMultiplier: 2
-  boxSize: {x: 0.48, y: 0.16}
+  moveSpeedGround: 6
+  moveSpeedAir: 3
+  jumpForce: 9
+  fallMultiplier: 2
+  lowJumpMultiplier: 4
+  coyoteTime: 0.083
+  boxSize: {x: 0.5, y: 0.16}
   castDistance: 0.45
   groundLayer:
     serializedVersion: 2
