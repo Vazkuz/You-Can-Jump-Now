@@ -14,14 +14,12 @@ using UnityEngine.UI;
 public class TestRelay : MonoBehaviour
 {
     [SerializeField] NetworkManagerUI NetworkManagerUI;
-    [SerializeField] Button joinBtn;
-    [SerializeField] Button createBtn;
+    [SerializeField] GameObject lobbyOptions;
     [SerializeField] Button leaveBtn;
 
     protected async void Start()
     {
-        joinBtn.gameObject.SetActive(false);
-        createBtn.gameObject.SetActive(false);
+        lobbyOptions.SetActive(false);
         leaveBtn.gameObject.SetActive(false);
         await UnityServices.InitializeAsync(); //Cualquier codigo luego de esto esperara a que esto pase para ejecutarse
 
@@ -31,8 +29,7 @@ public class TestRelay : MonoBehaviour
         };
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-        joinBtn.gameObject.SetActive(true);
-        createBtn.gameObject.SetActive(true);
+        lobbyOptions.SetActive(true);
     }
 
     public async void CreateRelay()
@@ -51,8 +48,7 @@ public class TestRelay : MonoBehaviour
 
             NetworkManagerUI.SetJoinCode(joinCode);
 
-            joinBtn.gameObject.SetActive(false);
-            createBtn.gameObject.SetActive(false);
+            lobbyOptions.SetActive(false);
             leaveBtn.gameObject.SetActive(true);
         }
         catch(RelayServiceException e)
@@ -77,8 +73,7 @@ public class TestRelay : MonoBehaviour
 
             NetworkManager.Singleton.StartClient();
 
-            joinBtn.gameObject.SetActive(false);
-            createBtn.gameObject.SetActive(false);
+            lobbyOptions.SetActive(false);
             leaveBtn.gameObject.SetActive(true);
         }
         catch (RelayServiceException e)
@@ -91,8 +86,7 @@ public class TestRelay : MonoBehaviour
     {
         NetworkManager.Singleton.Shutdown();
 
-        joinBtn.gameObject.SetActive(true);
-        createBtn.gameObject.SetActive(true);
+        lobbyOptions.SetActive(true);
         leaveBtn.gameObject.SetActive(false);
     }
 
