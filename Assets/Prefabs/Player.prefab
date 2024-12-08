@@ -166,6 +166,9 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
+  pickaxeLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!114 &-3340672397291402816
 MonoBehaviour:
   m_ObjectHideFlags: 0
