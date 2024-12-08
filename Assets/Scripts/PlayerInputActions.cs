@@ -45,6 +45,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""grabPickaxe"",
+                    ""type"": ""Button"",
+                    ""id"": ""4ed828e2-4ccc-4989-be93-9c6957af8f91"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -116,6 +125,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""8599e437-bc51-49f7-afd9-65c636547229"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""74a6175a-744c-437c-bbaa-723ed02bed0a"",
                     ""path"": ""<Keyboard>/space"",
                     ""interactions"": """",
@@ -127,12 +147,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""8599e437-bc51-49f7-afd9-65c636547229"",
-                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""id"": ""1d98370b-d8d1-4a0d-a2a1-c3bbb621ae7f"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""jump"",
+                    ""action"": ""grabPickaxe"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -145,6 +165,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_PlayerControls = asset.FindActionMap("PlayerControls", throwIfNotFound: true);
         m_PlayerControls_move = m_PlayerControls.FindAction("move", throwIfNotFound: true);
         m_PlayerControls_jump = m_PlayerControls.FindAction("jump", throwIfNotFound: true);
+        m_PlayerControls_grabPickaxe = m_PlayerControls.FindAction("grabPickaxe", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -213,12 +234,14 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private List<IPlayerControlsActions> m_PlayerControlsActionsCallbackInterfaces = new List<IPlayerControlsActions>();
     private readonly InputAction m_PlayerControls_move;
     private readonly InputAction m_PlayerControls_jump;
+    private readonly InputAction m_PlayerControls_grabPickaxe;
     public struct PlayerControlsActions
     {
         private @PlayerInputActions m_Wrapper;
         public PlayerControlsActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @move => m_Wrapper.m_PlayerControls_move;
         public InputAction @jump => m_Wrapper.m_PlayerControls_jump;
+        public InputAction @grabPickaxe => m_Wrapper.m_PlayerControls_grabPickaxe;
         public InputActionMap Get() { return m_Wrapper.m_PlayerControls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -234,6 +257,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @jump.started += instance.OnJump;
             @jump.performed += instance.OnJump;
             @jump.canceled += instance.OnJump;
+            @grabPickaxe.started += instance.OnGrabPickaxe;
+            @grabPickaxe.performed += instance.OnGrabPickaxe;
+            @grabPickaxe.canceled += instance.OnGrabPickaxe;
         }
 
         private void UnregisterCallbacks(IPlayerControlsActions instance)
@@ -244,6 +270,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @jump.started -= instance.OnJump;
             @jump.performed -= instance.OnJump;
             @jump.canceled -= instance.OnJump;
+            @grabPickaxe.started -= instance.OnGrabPickaxe;
+            @grabPickaxe.performed -= instance.OnGrabPickaxe;
+            @grabPickaxe.canceled -= instance.OnGrabPickaxe;
         }
 
         public void RemoveCallbacks(IPlayerControlsActions instance)
@@ -265,5 +294,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     {
         void OnMove(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnGrabPickaxe(InputAction.CallbackContext context);
     }
 }

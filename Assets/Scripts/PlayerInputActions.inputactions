@@ -22,6 +22,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "grabPickaxe",
+                    "type": "Button",
+                    "id": "4ed828e2-4ccc-4989-be93-9c6957af8f91",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -93,6 +102,17 @@
                 },
                 {
                     "name": "",
+                    "id": "8599e437-bc51-49f7-afd9-65c636547229",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "74a6175a-744c-437c-bbaa-723ed02bed0a",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -104,12 +124,12 @@
                 },
                 {
                     "name": "",
-                    "id": "8599e437-bc51-49f7-afd9-65c636547229",
-                    "path": "<Gamepad>/buttonSouth",
+                    "id": "1d98370b-d8d1-4a0d-a2a1-c3bbb621ae7f",
+                    "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "jump",
+                    "action": "grabPickaxe",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
