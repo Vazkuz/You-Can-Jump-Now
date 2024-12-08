@@ -11,7 +11,7 @@ public class PlayerNetwork : NetworkBehaviour
     [Header("Debug")]
     [SerializeField] bool isDebugScene = false;
 
-    [Header("Player Movement Vars")]
+    [Header("Player Movement Variables")]
     [SerializeField] private float moveSpeedGround = 3f;
     [SerializeField] private float moveSpeedAir = 3f;
     private float moveSpeed;
@@ -27,12 +27,14 @@ public class PlayerNetwork : NetworkBehaviour
     private Rigidbody2D rb;
 
     [Header("Ground Variables")]
-    //[SerializeField] bool isGrounded = false; //BORRAR LUEGO, SOLO PARA DEBUG
     [SerializeField] private Vector2 boxSize;
     [SerializeField] private float castDistance;
     [SerializeField] private LayerMask groundLayer;
     private bool _isFlying = false;
     private bool justChangedD = false;
+
+    [Header("Pickaxe Variables")]
+    [SerializeField] private LayerMask pickaxeLayer;
 
     protected void Awake()
     {
@@ -135,15 +137,43 @@ public class PlayerNetwork : NetworkBehaviour
         _isFlying = !IsGrounded();
     }
 
-    //[ServerRpc]
-    //private void TestServerRpc()
-    //{
-    //    print("TestServerRpc " + OwnerClientId);
-    //}
+    protected void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
+        {
+            inputActions.PlayerControls.grabPickaxe.performed += OnGrabbingPickaxe;
+        }
+    }
 
-    //[ClientRpc]
-    //private void TestClientRpc()
-    //{
-    //    print("TestClientRpc");
-    //}
+    protected void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
+        {
+            inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
+        }
+    }
+
+    private void OnGrabbingPickaxe(InputAction.CallbackContext context)
+    {
+        if (!IsOwner && !isDebugScene) return;
+        if (!IsServer)
+        {
+            RequestGrabPickaxeRpc();
+        }
+        else
+        {
+            GrabPickaxeOnServer();
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestGrabPickaxeRpc()
+    {
+        GrabPickaxeOnServer();
+    }
+
+    private void GrabPickaxeOnServer()
+    {
+        FindObjectOfType<Pickaxe>().gameObject.transform.parent = transform; //CHEQUEAR ESTO
+    }
 }
