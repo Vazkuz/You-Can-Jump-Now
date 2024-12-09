@@ -174,6 +174,6 @@ public class PlayerNetwork : NetworkBehaviour
 
     private void GrabPickaxeOnServer()
     {
-        FindObjectOfType<Pickaxe>().gameObject.transform.parent = transform; //CHEQUEAR ESTO
+        FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TrySetParent(transform);
     }
 }
