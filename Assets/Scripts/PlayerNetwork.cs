@@ -36,6 +36,9 @@ public class PlayerNetwork : NetworkBehaviour
     [Header("Pickaxe Variables")]
     [SerializeField] private LayerMask pickaxeLayer;
 
+    [Header("Lobby Vars")]
+    [SerializeField] SpriteRenderer hostSign;
+
     protected void Awake()
     {
         inputActions = new PlayerInputActions();
@@ -63,6 +66,7 @@ public class PlayerNetwork : NetworkBehaviour
         _isFlying = !IsGrounded();
         mayJumpTime = 0f;
         moveSpeed = moveSpeedGround;
+        //if(!IsServer) hostSign.enabled = false; // MAS ADELANTE AÑADIR ESTO, JUNTO CON UN LOBBY MANAGER.
     }
 
     protected void Update()
@@ -164,6 +168,9 @@ public class PlayerNetwork : NetworkBehaviour
         {
             GrabPickaxeOnServer();
         }
+
+        inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
+        inputActions.PlayerControls.grabPickaxe.performed += OnReleasingPickaxe;
     }
 
     [Rpc(SendTo.Server)]
@@ -175,5 +182,32 @@ public class PlayerNetwork : NetworkBehaviour
     private void GrabPickaxeOnServer()
     {
         FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TrySetParent(transform);
+    }
+
+    private void OnReleasingPickaxe(InputAction.CallbackContext context)
+    {
+
+        if (!IsOwner && !isDebugScene) return;
+        if (!IsServer)
+        {
+            RequestReleasePickaxeRpc();
+        }
+        else
+        {
+            ReleasePickaxeOnServer();
+        }
+
+        inputActions.PlayerControls.grabPickaxe.performed -= OnReleasingPickaxe;
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestReleasePickaxeRpc()
+    {
+        ReleasePickaxeOnServer();
+    }
+
+    private void ReleasePickaxeOnServer()
+    {
+        FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TryRemoveParent();
     }
 }
