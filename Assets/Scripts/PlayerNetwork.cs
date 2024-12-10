@@ -145,7 +145,7 @@ public class PlayerNetwork : NetworkBehaviour
 
     protected void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
+        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
         {
             inputActions.PlayerControls.grabPickaxe.performed += OnGrabbingPickaxe;
         }

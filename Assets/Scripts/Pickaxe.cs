@@ -8,7 +8,8 @@ using UnityEngine;
 public class Pickaxe : NetworkBehaviour
 {
     private Rigidbody2D rb;
-    [SerializeField] private List<Collider2D> colliders;
+    [SerializeField] private Collider2D triggerCollider;
+    [SerializeField] private Collider2D bodyCollider;
     private NetworkObject networkObject;
     private bool justSpawned = true;
 
@@ -16,7 +17,6 @@ public class Pickaxe : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         networkObject = GetComponent<NetworkObject>();
-        colliders = GetComponents<Collider2D>().ToList();
     }
     // Start is called before the first frame update
     public override void OnNetworkObjectParentChanged(NetworkObject parentNetworkObject)
@@ -31,10 +31,8 @@ public class Pickaxe : NetworkBehaviour
         else if (transform.parent == null)
         {
             rb.isKinematic = false;
-            foreach (Collider2D collider in colliders)
-            {
-                collider.enabled = true;
-            }
+            triggerCollider.enabled = true;
+            bodyCollider.enabled = true;
 
             // Giving the pickaxe back to the server.
             if (!IsServer) RequestChangeOwnershipRpc(NetworkManager.ServerClientId);
@@ -46,10 +44,9 @@ public class Pickaxe : NetworkBehaviour
         if (parentNetworkObject.GetComponent<PlayerNetwork>() == null) return;
 
         rb.isKinematic = true;
-        foreach (Collider2D collider in colliders)
-        {
-            collider.enabled = false;
-        }
+        triggerCollider.enabled = false;
+        bodyCollider.enabled = false;
+
         transform.localPosition = parentNetworkObject.GetComponent<PlayerNetwork>().Hand.localPosition;
         if (!IsServer) RequestChangeOwnershipRpc(parentNetworkObject.OwnerClientId);
         else ChangePickaxeOwnership(parentNetworkObject.OwnerClientId);
