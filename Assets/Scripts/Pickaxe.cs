@@ -17,7 +17,6 @@ public class Pickaxe : NetworkBehaviour
         rb = GetComponent<Rigidbody2D>();
         networkObject = GetComponent<NetworkObject>();
         colliders = GetComponents<Collider2D>().ToList();
-        print("El pico tiene " + colliders.Count + " colliders.");
     }
     // Start is called before the first frame update
     public override void OnNetworkObjectParentChanged(NetworkObject parentNetworkObject)
@@ -51,7 +50,7 @@ public class Pickaxe : NetworkBehaviour
         {
             collider.enabled = false;
         }
-        transform.localPosition = new Vector3(0, 0 , 0);
+        transform.localPosition = parentNetworkObject.GetComponent<PlayerNetwork>().Hand.localPosition;
         if (!IsServer) RequestChangeOwnershipRpc(parentNetworkObject.OwnerClientId);
         else ChangePickaxeOwnership(parentNetworkObject.OwnerClientId);
     }
@@ -64,6 +63,8 @@ public class Pickaxe : NetworkBehaviour
 
     private void ChangePickaxeOwnership(ulong newClientId)
     {
+        if(networkObject.OwnerClientId == newClientId) return;
+
         networkObject.ChangeOwnership(newClientId);
     }
 }

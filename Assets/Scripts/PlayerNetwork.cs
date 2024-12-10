@@ -35,6 +35,8 @@ public class PlayerNetwork : NetworkBehaviour
 
     [Header("Pickaxe Variables")]
     [SerializeField] private LayerMask pickaxeLayer;
+    public Transform Hand { get { return hand; } private set { hand = value; } }
+    [SerializeField] private Transform hand;
 
     [Header("Lobby Vars")]
     [SerializeField] SpriteRenderer hostSign;
@@ -160,6 +162,7 @@ public class PlayerNetwork : NetworkBehaviour
     private void OnGrabbingPickaxe(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
+
         if (!IsServer)
         {
             RequestGrabPickaxeRpc();
