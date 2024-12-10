@@ -31,6 +31,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "mine",
+                    "type": "Button",
+                    "id": "cf7de948-811b-4317-9b9f-561295fe7d70",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -125,7 +134,7 @@
                 {
                     "name": "",
                     "id": "1d98370b-d8d1-4a0d-a2a1-c3bbb621ae7f",
-                    "path": "<Gamepad>/rightTrigger",
+                    "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -141,6 +150,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "grabPickaxe",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "be3585e7-c2b5-4451-87ad-7a34568eed86",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "mine",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "45008af5-c845-4c75-9ae8-a64beaa1cc31",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "mine",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

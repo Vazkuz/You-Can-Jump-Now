@@ -54,6 +54,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""mine"",
+                    ""type"": ""Button"",
+                    ""id"": ""cf7de948-811b-4317-9b9f-561295fe7d70"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -148,7 +157,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""1d98370b-d8d1-4a0d-a2a1-c3bbb621ae7f"",
-                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""path"": ""<Gamepad>/buttonWest"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -166,6 +175,28 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""grabPickaxe"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""be3585e7-c2b5-4451-87ad-7a34568eed86"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""mine"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""45008af5-c845-4c75-9ae8-a64beaa1cc31"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""mine"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -177,6 +208,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_PlayerControls_move = m_PlayerControls.FindAction("move", throwIfNotFound: true);
         m_PlayerControls_jump = m_PlayerControls.FindAction("jump", throwIfNotFound: true);
         m_PlayerControls_grabPickaxe = m_PlayerControls.FindAction("grabPickaxe", throwIfNotFound: true);
+        m_PlayerControls_mine = m_PlayerControls.FindAction("mine", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -246,6 +278,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerControls_move;
     private readonly InputAction m_PlayerControls_jump;
     private readonly InputAction m_PlayerControls_grabPickaxe;
+    private readonly InputAction m_PlayerControls_mine;
     public struct PlayerControlsActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -253,6 +286,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @move => m_Wrapper.m_PlayerControls_move;
         public InputAction @jump => m_Wrapper.m_PlayerControls_jump;
         public InputAction @grabPickaxe => m_Wrapper.m_PlayerControls_grabPickaxe;
+        public InputAction @mine => m_Wrapper.m_PlayerControls_mine;
         public InputActionMap Get() { return m_Wrapper.m_PlayerControls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -271,6 +305,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @grabPickaxe.started += instance.OnGrabPickaxe;
             @grabPickaxe.performed += instance.OnGrabPickaxe;
             @grabPickaxe.canceled += instance.OnGrabPickaxe;
+            @mine.started += instance.OnMine;
+            @mine.performed += instance.OnMine;
+            @mine.canceled += instance.OnMine;
         }
 
         private void UnregisterCallbacks(IPlayerControlsActions instance)
@@ -284,6 +321,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @grabPickaxe.started -= instance.OnGrabPickaxe;
             @grabPickaxe.performed -= instance.OnGrabPickaxe;
             @grabPickaxe.canceled -= instance.OnGrabPickaxe;
+            @mine.started -= instance.OnMine;
+            @mine.performed -= instance.OnMine;
+            @mine.canceled -= instance.OnMine;
         }
 
         public void RemoveCallbacks(IPlayerControlsActions instance)
@@ -306,5 +346,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnGrabPickaxe(InputAction.CallbackContext context);
+        void OnMine(InputAction.CallbackContext context);
     }
 }
