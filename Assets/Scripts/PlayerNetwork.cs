@@ -20,6 +20,8 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private float lowJumpMultiplier = 2f;
     [SerializeField] private float coyoteTime = 0.1f;
+    public NetworkVariable<bool> canJump = new NetworkVariable<bool>();
+
     private float mayJumpTime;
     InputAction moveAction;
     InputAction jumpAction;
@@ -37,6 +39,12 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private LayerMask pickaxeLayer;
     public Transform Hand { get { return hand; } private set { hand = value; } }
     [SerializeField] private Transform hand;
+    public NetworkVariable<bool> hasPickaxe { get; private set; } = new NetworkVariable<bool>();
+
+    [Header("Mineral Variables")]
+    [SerializeField] private LayerMask mineralLayer;
+    [SerializeField] private bool canMine = false;
+    public static event Action<ulong> OnMining;
 
     [Header("Lobby Vars")]
     [SerializeField] SpriteRenderer hostSign;
@@ -44,6 +52,8 @@ public class PlayerNetwork : NetworkBehaviour
     protected void Awake()
     {
         inputActions = new PlayerInputActions();
+        hasPickaxe.Value = false;
+        canJump.Value = false;
     }
 
     protected void OnEnable()
@@ -113,6 +123,7 @@ public class PlayerNetwork : NetworkBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
+        if (!canJump.Value) return;
         if (!IsOwner && !isDebugScene) return;
         if (mayJumpTime <= 0) return; // Check if Coyote Time still applies
         rb.velocity = Vector2.right * rb.velocity.x + Vector2.up * jumpForce;
@@ -149,6 +160,12 @@ public class PlayerNetwork : NetworkBehaviour
         {
             inputActions.PlayerControls.grabPickaxe.performed += OnGrabbingPickaxe;
         }
+        
+        if (collision.gameObject.layer == Mathf.Log(mineralLayer, 2))
+        {
+            canMine = true;
+        }
+
     }
 
     protected void OnTriggerExit2D(Collider2D collision)
@@ -157,11 +174,18 @@ public class PlayerNetwork : NetworkBehaviour
         {
             inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
         }
+
+        if (collision.gameObject.layer == Mathf.Log(mineralLayer, 2))
+        {
+            canMine = false;
+        }
     }
 
     private void OnGrabbingPickaxe(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
+
+        canJump.Value = false;
 
         if (!IsServer)
         {
@@ -174,6 +198,17 @@ public class PlayerNetwork : NetworkBehaviour
 
         inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
         inputActions.PlayerControls.grabPickaxe.performed += OnReleasingPickaxe;
+        inputActions.PlayerControls.mine.performed += OnTryingToMine;
+
+        hasPickaxe.Value = true;
+    }
+
+    private void OnTryingToMine(InputAction.CallbackContext context)
+    {
+        if (canMine)
+        {
+            OnMining?.Invoke(OwnerClientId);
+        }
     }
 
     [Rpc(SendTo.Server)]
@@ -201,6 +236,9 @@ public class PlayerNetwork : NetworkBehaviour
         }
 
         inputActions.PlayerControls.grabPickaxe.performed -= OnReleasingPickaxe;
+        inputActions.PlayerControls.mine.performed -= OnTryingToMine;
+
+        hasPickaxe.Value = false;
     }
 
     [Rpc(SendTo.Server)]

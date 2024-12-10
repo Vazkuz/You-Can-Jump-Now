@@ -162,6 +162,8 @@ MonoBehaviour:
   fallMultiplier: 2
   lowJumpMultiplier: 4
   coyoteTime: 0.083
+  canJump:
+    m_InternalValue: 0
   boxSize: {x: 0.5, y: 0.16}
   castDistance: 0.45
   groundLayer:
@@ -171,6 +173,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   hand: {fileID: 701516440609365872}
+  mineralLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  canMine: 0
   hostSign: {fileID: 0}
 --- !u!114 &-3340672397291402816
 MonoBehaviour:
