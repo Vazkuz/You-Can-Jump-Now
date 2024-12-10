@@ -5,7 +5,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NetworkManagerUI : MonoBehaviour
+public class NetworkManagerUI : NetworkBehaviour
 {
     //[SerializeField] private Button serverBtn;
     [SerializeField] private GameObject joinMenu;
@@ -17,17 +17,9 @@ public class NetworkManagerUI : MonoBehaviour
 
     protected void Awake()
     {
-        //serverBtn.onClick.AddListener(() =>
-        //{
-        //    NetworkManager.Singleton.StartServer();
-        //});
-        //hostBtn.onClick.AddListener(() =>
-        //{
-        //    NetworkManager.Singleton.StartHost();
-        //});
-
         joinCode.text = string.Empty;
         DisableJoinIF();
+        NetworkManager.OnClientConnectedCallback += ClientSideSetJoinCode;
     }
 
     public void EnableJoinIF()
@@ -42,11 +34,22 @@ public class NetworkManagerUI : MonoBehaviour
         joinInputField.text = string.Empty;
     }
 
-    public void SetJoinCode(string joinCode)
+    [Rpc(SendTo.Everyone)]
+    public void SetJoinCodeRpc(string joinCode)
     {
         joinCodeStr = joinCode;
         this.joinCode.text = "Code: " + joinCodeStr;
     }
+
+    public void ClientSideSetJoinCode(ulong clientId)
+    {
+        if (IsServer)
+        {
+            SetJoinCodeRpc(joinCodeStr);
+        }
+    }
+
+    
 
     public void JoinLobby()
     {
@@ -57,4 +60,13 @@ public class NetworkManagerUI : MonoBehaviour
     {
         this.joinCodeStr = joinCodeStr;
     }
+
+    public void CopyLobbyCode()
+    {
+        TextEditor te = new TextEditor();
+        te.text = joinCodeStr;
+        te.SelectAll();
+        te.Copy();
+    }
+
 }
