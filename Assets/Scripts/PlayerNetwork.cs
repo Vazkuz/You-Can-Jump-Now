@@ -207,8 +207,26 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (canMine)
         {
-            OnMining?.Invoke(OwnerClientId);
+            if (IsServer)
+            {
+                MineOnServer(OwnerClientId);
+            }
+            else
+            {
+                RequestMineRpc(OwnerClientId);
+            }
         }
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestMineRpc(ulong clientId)
+    {
+        MineOnServer(clientId);
+    }
+
+    private void MineOnServer(ulong clientId)
+    {
+        OnMining?.Invoke(clientId);
     }
 
     [Rpc(SendTo.Server)]
