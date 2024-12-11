@@ -22,12 +22,7 @@ public class Mineral : NetworkBehaviour
     {
         base.OnNetworkSpawn();
         PlayerNetwork.OnMining += OnMined;
-        //NetworkManager.OnClientConnectedCallback += OnNewPlayerConnected;
     }
-    //private void OnNewPlayerConnected(ulong clientId)
-    //{
-    //    PlayerNetwork.OnMining += OnMined;
-    //}
 
     private void OnMined(ulong player)
     {
@@ -44,17 +39,7 @@ public class Mineral : NetworkBehaviour
                 FinishMineRpc(player);
                 thisNGO.Despawn(gameObject);
             }
-            //else
-            //{
-            //    RequestFinishMineRpc(player);
-            //}
         }
-    }
-
-    [Rpc(SendTo.Server)]
-    private void RequestFinishMineRpc(ulong clientId)
-    {
-        FinishMineOnServer(clientId);
     }
 
     /// <summary>
