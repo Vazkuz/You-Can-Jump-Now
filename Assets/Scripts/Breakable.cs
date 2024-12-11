@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -8,7 +9,9 @@ public class Breakable : NetworkBehaviour
 {
     [SerializeField] protected NetworkVariable<int> health = new NetworkVariable<int>(3);
     private NetworkVariable<bool> itsBroken = new NetworkVariable<bool>(false);
-    NetworkObject networkObject;
+    protected NetworkObject networkObject;
+
+    public static event Action<ulong> OnFinishedMine;
 
     //Start, on in-scene objects, occurs BEFORE OnNetworkSpawn.
     protected virtual void Start()
@@ -40,6 +43,16 @@ public class Breakable : NetworkBehaviour
     protected virtual void OnBreak(ulong player)
     {
         itsBroken.Value = true;
-        networkObject.Despawn(gameObject);
+        FinishMineRpc(player);
+    }
+
+    /// <summary>
+    /// Once the mineral's health is 0, it has been mined completely. All clients get this information with this Rpc.
+    /// </summary>
+    /// <param name="clientId">ID of the last player that mined the mineral. In other words, id of the player who destroyed the mineral.</param>
+    [Rpc(SendTo.Everyone)]
+    private void FinishMineRpc(ulong clientId)
+    {
+        OnFinishedMine?.Invoke(clientId);
     }
 }
