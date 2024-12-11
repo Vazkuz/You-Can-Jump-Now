@@ -20,7 +20,7 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private float lowJumpMultiplier = 2f;
     [SerializeField] private float coyoteTime = 0.1f;
-    public NetworkVariable<bool> canJump = new NetworkVariable<bool>();
+    public NetworkVariable<bool> canJump = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
 
     private float mayJumpTime;
     InputAction moveAction;
@@ -39,7 +39,7 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private LayerMask pickaxeLayer;
     public Transform Hand { get { return hand; } private set { hand = value; } }
     [SerializeField] private Transform hand;
-    public NetworkVariable<bool> hasPickaxe { get; private set; } = new NetworkVariable<bool>();
+    public NetworkVariable<bool> hasPickaxe { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
 
     [Header("Mineral Variables")]
     [SerializeField] private LayerMask mineralLayer;
@@ -78,7 +78,20 @@ public class PlayerNetwork : NetworkBehaviour
         _isFlying = !IsGrounded();
         mayJumpTime = 0f;
         moveSpeed = moveSpeedGround;
+
+        Mineral.OnFinishedMine += OnFinishedMine;
         //if(!IsServer) hostSign.enabled = false; // MAS ADELANTE AÑADIR ESTO, JUNTO CON UN LOBBY MANAGER.
+    }
+
+    private void OnFinishedMine(ulong lastMinerId)
+    {
+        //Check that is the owner who is trying to run this.
+        if (!IsOwner && !isDebugScene) return;
+
+        //Check if the player was the last to mine the mineral. If that's the case, they can't be granted jump.
+        if (OwnerClientId == lastMinerId) return;
+
+        canJump.Value = true;
     }
 
     protected void Update()
@@ -125,7 +138,9 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (!canJump.Value) return;
         if (!IsOwner && !isDebugScene) return;
-        if (mayJumpTime <= 0) return; // Check if Coyote Time still applies
+        if (mayJumpTime <= 0) return; // Check if we are still under coyote time, if not, we can't jump.
+
+        canJump.Value = false;
         rb.velocity = Vector2.right * rb.velocity.x + Vector2.up * jumpForce;
 
     }
