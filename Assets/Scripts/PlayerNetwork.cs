@@ -11,7 +11,7 @@ public class PlayerNetwork : NetworkBehaviour
     [Header("Debug")]
     [SerializeField] bool isDebugScene = false;
 
-    [Header("Player Movement Vars")]
+    [Header("Player Movement Variables")]
     [SerializeField] private float moveSpeedGround = 3f;
     [SerializeField] private float moveSpeedAir = 3f;
     private float moveSpeed;
@@ -20,6 +20,8 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private float lowJumpMultiplier = 2f;
     [SerializeField] private float coyoteTime = 0.1f;
+    public NetworkVariable<bool> canJump = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
+
     private float mayJumpTime;
     InputAction moveAction;
     InputAction jumpAction;
@@ -27,16 +29,31 @@ public class PlayerNetwork : NetworkBehaviour
     private Rigidbody2D rb;
 
     [Header("Ground Variables")]
-    //[SerializeField] bool isGrounded = false; //BORRAR LUEGO, SOLO PARA DEBUG
     [SerializeField] private Vector2 boxSize;
     [SerializeField] private float castDistance;
     [SerializeField] private LayerMask groundLayer;
     private bool _isFlying = false;
     private bool justChangedD = false;
 
+    [Header("Pickaxe Variables")]
+    [SerializeField] private LayerMask pickaxeLayer;
+    public Transform Hand { get { return hand; } private set { hand = value; } }
+    [SerializeField] private Transform hand;
+    public NetworkVariable<bool> hasPickaxe { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
+
+    [Header("Mineral Variables")]
+    [SerializeField] private LayerMask mineralLayer;
+    [SerializeField] private bool canMine = false;
+    public static event Action<ulong> OnMining;
+
+    [Header("Lobby Vars")]
+    [SerializeField] SpriteRenderer hostSign;
+
     protected void Awake()
     {
         inputActions = new PlayerInputActions();
+        hasPickaxe.Value = false;
+        canJump.Value = false;
     }
 
     protected void OnEnable()
@@ -61,6 +78,20 @@ public class PlayerNetwork : NetworkBehaviour
         _isFlying = !IsGrounded();
         mayJumpTime = 0f;
         moveSpeed = moveSpeedGround;
+
+        Mineral.OnFinishedMine += OnFinishedMine;
+        //if(!IsServer) hostSign.enabled = false; // MAS ADELANTE AÑADIR ESTO, JUNTO CON UN LOBBY MANAGER.
+    }
+
+    private void OnFinishedMine(ulong lastMinerId)
+    {
+        //Check that is the owner who is trying to run this.
+        if (!IsOwner && !isDebugScene) return;
+
+        //Check if the player was the last to mine the mineral. If that's the case, they can't be granted jump.
+        if (OwnerClientId == lastMinerId) return;
+
+        canJump.Value = true;
     }
 
     protected void Update()
@@ -105,8 +136,11 @@ public class PlayerNetwork : NetworkBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
+        if (!canJump.Value) return;
         if (!IsOwner && !isDebugScene) return;
-        if (mayJumpTime <= 0) return; // Check if Coyote Time still applies
+        if (mayJumpTime <= 0) return; // Check if we are still under coyote time, if not, we can't jump.
+
+        canJump.Value = false;
         rb.velocity = Vector2.right * rb.velocity.x + Vector2.up * jumpForce;
 
     }
@@ -135,15 +169,119 @@ public class PlayerNetwork : NetworkBehaviour
         _isFlying = !IsGrounded();
     }
 
-    //[ServerRpc]
-    //private void TestServerRpc()
-    //{
-    //    print("TestServerRpc " + OwnerClientId);
-    //}
+    protected void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
+        {
+            inputActions.PlayerControls.grabPickaxe.performed += OnGrabbingPickaxe;
+        }
+        
+        if (collision.gameObject.layer == Mathf.Log(mineralLayer, 2))
+        {
+            canMine = true;
+        }
 
-    //[ClientRpc]
-    //private void TestClientRpc()
-    //{
-    //    print("TestClientRpc");
-    //}
+    }
+
+    protected void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
+        {
+            inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
+        }
+
+        if (collision.gameObject.layer == Mathf.Log(mineralLayer, 2))
+        {
+            canMine = false;
+        }
+    }
+
+    private void OnGrabbingPickaxe(InputAction.CallbackContext context)
+    {
+        if (!IsOwner && !isDebugScene) return;
+
+        canJump.Value = false;
+
+        if (!IsServer)
+        {
+            RequestGrabPickaxeRpc();
+        }
+        else
+        {
+            GrabPickaxeOnServer();
+        }
+
+        inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
+        inputActions.PlayerControls.grabPickaxe.performed += OnReleasingPickaxe;
+        inputActions.PlayerControls.mine.performed += OnTryingToMine;
+
+        hasPickaxe.Value = true;
+    }
+
+    private void OnTryingToMine(InputAction.CallbackContext context)
+    {
+        if (canMine)
+        {
+            if (IsServer)
+            {
+                MineOnServer(OwnerClientId);
+            }
+            else
+            {
+                RequestMineRpc(OwnerClientId);
+            }
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestMineRpc(ulong clientId)
+    {
+        MineOnServer(clientId);
+    }
+
+    private void MineOnServer(ulong clientId)
+    {
+        OnMining?.Invoke(clientId);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestGrabPickaxeRpc()
+    {
+        GrabPickaxeOnServer();
+    }
+
+    private void GrabPickaxeOnServer()
+    {
+        FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TrySetParent(transform);
+    }
+
+    private void OnReleasingPickaxe(InputAction.CallbackContext context)
+    {
+
+        if (!IsOwner && !isDebugScene) return;
+        if (!IsServer)
+        {
+            RequestReleasePickaxeRpc();
+        }
+        else
+        {
+            ReleasePickaxeOnServer();
+        }
+
+        inputActions.PlayerControls.grabPickaxe.performed -= OnReleasingPickaxe;
+        inputActions.PlayerControls.mine.performed -= OnTryingToMine;
+
+        hasPickaxe.Value = false;
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestReleasePickaxeRpc()
+    {
+        ReleasePickaxeOnServer();
+    }
+
+    private void ReleasePickaxeOnServer()
+    {
+        FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TryRemoveParent();
+    }
 }

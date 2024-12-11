@@ -28,7 +28,6 @@ public class SceneManager : NetworkBehaviour
         SpawnPickaxeOnServer();
     }
 
-    //[Rpc(SendTo.Everyone)]
     private void SpawnPickaxeOnServer()
     {
         if (pickaxeObjectTransform == null)

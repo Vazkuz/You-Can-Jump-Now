@@ -16,11 +16,13 @@ public class TestRelay : MonoBehaviour
     [SerializeField] NetworkManagerUI NetworkManagerUI;
     [SerializeField] GameObject lobbyOptions;
     [SerializeField] Button leaveBtn;
+    [SerializeField] Button copyLobbyBtn;
 
     protected async void Start()
     {
         lobbyOptions.SetActive(false);
         leaveBtn.gameObject.SetActive(false);
+        copyLobbyBtn.gameObject.SetActive(false);
         await UnityServices.InitializeAsync(); //Cualquier codigo luego de esto esperara a que esto pase para ejecutarse
 
         AuthenticationService.Instance.SignedIn += () =>
@@ -46,12 +48,13 @@ public class TestRelay : MonoBehaviour
 
             NetworkManager.Singleton.StartHost();
 
-            NetworkManagerUI.SetJoinCode(joinCode);
+            NetworkManagerUI.SetJoinCodeRpc(joinCode);
 
             lobbyOptions.SetActive(false);
             leaveBtn.gameObject.SetActive(true);
+            copyLobbyBtn.gameObject.SetActive(true);
         }
-        catch(RelayServiceException e)
+        catch (RelayServiceException e)
         {
             print(e);
         }
@@ -75,6 +78,7 @@ public class TestRelay : MonoBehaviour
 
             lobbyOptions.SetActive(false);
             leaveBtn.gameObject.SetActive(true);
+            copyLobbyBtn.gameObject.SetActive(true); //AQUI HACER UN ASYNC O ALGO XD
         }
         catch (RelayServiceException e)
         {
@@ -88,6 +92,6 @@ public class TestRelay : MonoBehaviour
 
         lobbyOptions.SetActive(true);
         leaveBtn.gameObject.SetActive(false);
+        copyLobbyBtn.gameObject.SetActive(false);
     }
-
 }
