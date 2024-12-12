@@ -62,32 +62,45 @@ public class PlayerNetwork : NetworkBehaviour
         inputActions = new PlayerInputActions();
         hasPickaxe.Value = false;
         canJump.Value = false;
+        print("Awake");
     }
 
     protected void Start()
     {
+        print("Start");
         rb = GetComponent<Rigidbody2D>();
         _isFlying = !IsGrounded();
         mayJumpTime = 0f;
         moveSpeed = moveSpeedGround;
-
-        Mineral.OnFinishedMine += OnFinishedMine;
         //if(!IsServer) hostSign.enabled = false; // MAS ADELANTE AÑADIR ESTO, JUNTO CON UN LOBBY MANAGER.
     }
-
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        print("OnNetworkSpawn");
+    }
     protected void OnEnable()
     {
+        print("OnEnable");
         inputActions.Enable();
         moveAction = inputActions.PlayerControls.move;
 
         jumpAction = inputActions.PlayerControls.jump;
 
         inputActions.PlayerControls.jump.performed += OnJump;
+
+        Mineral.OnFinishedMine += OnFinishedMine;
     }
 
     protected void OnDisable()
     {
+        // Unsubscribe to all events to prevent Memory Leaks.
         inputActions.PlayerControls.jump.performed -= OnJump;
+        inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
+        inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
+        inputActions.PlayerControls.grabPickaxe.performed -= OnReleasingPickaxe;
+        inputActions.PlayerControls.mine.performed -= OnTryingToMine;
+        Mineral.OnFinishedMine -= OnFinishedMine;
         inputActions.Disable();
     }
 
@@ -190,6 +203,10 @@ public class PlayerNetwork : NetworkBehaviour
         return Physics2D.BoxCast(transform.position, boxSize, 0, -transform.up, castDistance, groundLayer);
     }
 
+    /// <summary>
+    /// Method called when jumping. Subscribed initially on OnEnable
+    /// </summary>
+    /// <param name="context"></param>
     private void OnJump(InputAction.CallbackContext context)
     {
         if (!canJump.Value) return;
@@ -214,6 +231,10 @@ public class PlayerNetwork : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Method to grab the pickaxe. Subscribed only OnTriggerEnter the pickaxe.
+    /// </summary>
+    /// <param name="context"></param>
     private void OnGrabbingPickaxe(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
@@ -247,6 +268,10 @@ public class PlayerNetwork : NetworkBehaviour
         FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TrySetParent(transform);
     }
 
+    /// <summary>
+    /// Method to release the pickaxe. Subscribed when the player has grabbed the pickaxe.
+    /// </summary>
+    /// <param name="context"></param>
     private void OnReleasingPickaxe(InputAction.CallbackContext context)
     {
 
@@ -282,6 +307,10 @@ public class PlayerNetwork : NetworkBehaviour
         FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TryRemoveParent();
     }
 
+    /// <summary>
+    /// Method to mine using the pickaxe. Subscribed when the player grabs the pickaxe.
+    /// </summary>
+    /// <param name="context"></param>
     private void OnTryingToMine(InputAction.CallbackContext context)
     {
         if (canMine)
@@ -308,6 +337,10 @@ public class PlayerNetwork : NetworkBehaviour
         OnMining?.Invoke(clientId);
     }
 
+    /// <summary>
+    /// Method called when finish mining a mineral. Initially subscribed OnEnable.
+    /// </summary>
+    /// <param name="lastMinerId"></param>
     private void OnFinishedMine(ulong lastMinerId)
     {
         //Check that is the owner who is trying to run this.
@@ -319,6 +352,10 @@ public class PlayerNetwork : NetworkBehaviour
         canJump.Value = true;
     }
 
+    /// <summary>
+    /// Method to execute passing through the exit door. Subscribed OnTriggerEnter the exit.
+    /// </summary>
+    /// <param name="context"></param>
     private void OnPlayerGoThroughDoor(InputAction.CallbackContext context)
     {
         if(!IsOwner && !isDebugScene) return;
