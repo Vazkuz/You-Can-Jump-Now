@@ -177,6 +177,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   canMine: 0
+  exitLayer:
+    serializedVersion: 2
+    m_Bits: 1024
   hostSign: {fileID: 0}
 --- !u!114 &-3340672397291402816
 MonoBehaviour:

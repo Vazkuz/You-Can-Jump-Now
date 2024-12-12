@@ -47,6 +47,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""enterDoor"",
+                    ""type"": ""Button"",
+                    ""id"": ""a46f6d13-d5ca-4a18-ad39-3af60343fc87"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""grabPickaxe"",
                     ""type"": ""Button"",
                     ""id"": ""4ed828e2-4ccc-4989-be93-9c6957af8f91"",
@@ -156,6 +165,28 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""aa3ac5a6-2bb9-4afb-824c-02f8ed8c075d"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""enterDoor"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""074319e9-fd9f-468e-8704-5313d52e54ee"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""enterDoor"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""1d98370b-d8d1-4a0d-a2a1-c3bbb621ae7f"",
                     ""path"": ""<Gamepad>/buttonWest"",
                     ""interactions"": """",
@@ -207,6 +238,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_PlayerControls = asset.FindActionMap("PlayerControls", throwIfNotFound: true);
         m_PlayerControls_move = m_PlayerControls.FindAction("move", throwIfNotFound: true);
         m_PlayerControls_jump = m_PlayerControls.FindAction("jump", throwIfNotFound: true);
+        m_PlayerControls_enterDoor = m_PlayerControls.FindAction("enterDoor", throwIfNotFound: true);
         m_PlayerControls_grabPickaxe = m_PlayerControls.FindAction("grabPickaxe", throwIfNotFound: true);
         m_PlayerControls_mine = m_PlayerControls.FindAction("mine", throwIfNotFound: true);
     }
@@ -277,6 +309,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private List<IPlayerControlsActions> m_PlayerControlsActionsCallbackInterfaces = new List<IPlayerControlsActions>();
     private readonly InputAction m_PlayerControls_move;
     private readonly InputAction m_PlayerControls_jump;
+    private readonly InputAction m_PlayerControls_enterDoor;
     private readonly InputAction m_PlayerControls_grabPickaxe;
     private readonly InputAction m_PlayerControls_mine;
     public struct PlayerControlsActions
@@ -285,6 +318,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public PlayerControlsActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @move => m_Wrapper.m_PlayerControls_move;
         public InputAction @jump => m_Wrapper.m_PlayerControls_jump;
+        public InputAction @enterDoor => m_Wrapper.m_PlayerControls_enterDoor;
         public InputAction @grabPickaxe => m_Wrapper.m_PlayerControls_grabPickaxe;
         public InputAction @mine => m_Wrapper.m_PlayerControls_mine;
         public InputActionMap Get() { return m_Wrapper.m_PlayerControls; }
@@ -302,6 +336,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @jump.started += instance.OnJump;
             @jump.performed += instance.OnJump;
             @jump.canceled += instance.OnJump;
+            @enterDoor.started += instance.OnEnterDoor;
+            @enterDoor.performed += instance.OnEnterDoor;
+            @enterDoor.canceled += instance.OnEnterDoor;
             @grabPickaxe.started += instance.OnGrabPickaxe;
             @grabPickaxe.performed += instance.OnGrabPickaxe;
             @grabPickaxe.canceled += instance.OnGrabPickaxe;
@@ -318,6 +355,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @jump.started -= instance.OnJump;
             @jump.performed -= instance.OnJump;
             @jump.canceled -= instance.OnJump;
+            @enterDoor.started -= instance.OnEnterDoor;
+            @enterDoor.performed -= instance.OnEnterDoor;
+            @enterDoor.canceled -= instance.OnEnterDoor;
             @grabPickaxe.started -= instance.OnGrabPickaxe;
             @grabPickaxe.performed -= instance.OnGrabPickaxe;
             @grabPickaxe.canceled -= instance.OnGrabPickaxe;
@@ -345,6 +385,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     {
         void OnMove(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnEnterDoor(InputAction.CallbackContext context);
         void OnGrabPickaxe(InputAction.CallbackContext context);
         void OnMine(InputAction.CallbackContext context);
     }

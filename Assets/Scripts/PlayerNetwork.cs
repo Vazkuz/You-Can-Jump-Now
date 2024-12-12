@@ -46,6 +46,11 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private bool canMine = false;
     public static event Action<ulong> OnMining;
 
+    [Header("Exit Vars")]
+    [SerializeField] private LayerMask exitLayer;
+    [SerializeField] private bool insideDoorFrame = false;
+    public static event Action<ulong> OnExit;
+
     [Header("Lobby Vars")]
     [SerializeField] SpriteRenderer hostSign;
 
@@ -91,6 +96,12 @@ public class PlayerNetwork : NetworkBehaviour
 
     }
 
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        inputActions.PlayerControls.enterDoor.performed -= OnPlayerEnterDoor;
+    }
+
     /// <summary>
     /// Drawing the cube that is used to check if player is grounded.
     /// </summary>
@@ -125,6 +136,12 @@ public class PlayerNetwork : NetworkBehaviour
             canMine = true;
         }
 
+        if(collision.gameObject.layer == Mathf.Log(exitLayer, 2))
+        {
+            inputActions.PlayerControls.enterDoor.performed += OnPlayerEnterDoor;
+            insideDoorFrame = true;
+        }
+
     }
 
     protected void OnTriggerExit2D(Collider2D collision)
@@ -138,8 +155,13 @@ public class PlayerNetwork : NetworkBehaviour
         {
             canMine = false;
         }
-    }
 
+        if (collision.gameObject.layer == Mathf.Log(exitLayer, 2))
+        {
+            inputActions.PlayerControls.enterDoor.performed -= OnPlayerEnterDoor;
+            insideDoorFrame = false;
+        }
+    }
     private void HandleNetworkMovement()
     {
         //Check if client is owner. If it's not, it can't move the player
@@ -170,6 +192,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (!canJump.Value) return;
         if (!IsOwner && !isDebugScene) return;
         if (mayJumpTime <= 0) return; // Check if we are still under coyote time, if not, we can't jump.
+        if (insideDoorFrame) return; // El jugador no puede saltar cuando esta dentro de la zona de salida.
 
         canJump.Value = false;
         rb.velocity = Vector2.right * rb.velocity.x + Vector2.up * jumpForce;
@@ -287,4 +310,10 @@ public class PlayerNetwork : NetworkBehaviour
 
         canJump.Value = true;
     }
+
+    private void OnPlayerEnterDoor(InputAction.CallbackContext context)
+    {
+        OnExit?.Invoke(OwnerClientId);
+    }
+
 }
