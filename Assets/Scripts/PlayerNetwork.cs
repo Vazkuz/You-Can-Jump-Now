@@ -11,7 +11,12 @@ public class PlayerNetwork : NetworkBehaviour
     [Header("Debug")]
     [SerializeField] bool isDebugScene = false;
 
-    [Header("Player Movement Variables")]
+    [Header("Character Appearance")]
+    [SerializeField] private GameObject characterBody;
+    public Transform Hand { get { return hand; } private set { hand = value; } }
+    [SerializeField] private Transform hand;
+
+    [Header("Character Movement Variables")]
     [SerializeField] private float moveSpeedGround = 3f;
     [SerializeField] private float moveSpeedAir = 3f;
     private float moveSpeed;
@@ -37,8 +42,6 @@ public class PlayerNetwork : NetworkBehaviour
 
     [Header("Pickaxe Variables")]
     [SerializeField] private LayerMask pickaxeLayer;
-    public Transform Hand { get { return hand; } private set { hand = value; } }
-    [SerializeField] private Transform hand;
     public NetworkVariable<bool> hasPickaxe { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
 
     [Header("Mineral Variables")]
@@ -99,7 +102,7 @@ public class PlayerNetwork : NetworkBehaviour
     public override void OnDestroy()
     {
         base.OnDestroy();
-        inputActions.PlayerControls.enterDoor.performed -= OnPlayerEnterDoor;
+        inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
     }
 
     /// <summary>
@@ -138,7 +141,7 @@ public class PlayerNetwork : NetworkBehaviour
 
         if(collision.gameObject.layer == Mathf.Log(exitLayer, 2))
         {
-            inputActions.PlayerControls.enterDoor.performed += OnPlayerEnterDoor;
+            inputActions.PlayerControls.enterDoor.performed += OnPlayerGoThroughDoor;
             insideDoorFrame = true;
         }
 
@@ -158,7 +161,7 @@ public class PlayerNetwork : NetworkBehaviour
 
         if (collision.gameObject.layer == Mathf.Log(exitLayer, 2))
         {
-            inputActions.PlayerControls.enterDoor.performed -= OnPlayerEnterDoor;
+            inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
             insideDoorFrame = false;
         }
     }
@@ -248,6 +251,13 @@ public class PlayerNetwork : NetworkBehaviour
     {
 
         if (!IsOwner && !isDebugScene) return;
+        HandleReleasePickaxe();
+
+        hasPickaxe.Value = false;
+    }
+
+    private void HandleReleasePickaxe()
+    {
         if (!IsServer)
         {
             RequestReleasePickaxeRpc();
@@ -259,8 +269,6 @@ public class PlayerNetwork : NetworkBehaviour
 
         inputActions.PlayerControls.grabPickaxe.performed -= OnReleasingPickaxe;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
-
-        hasPickaxe.Value = false;
     }
 
     [Rpc(SendTo.Server)]
@@ -311,9 +319,39 @@ public class PlayerNetwork : NetworkBehaviour
         canJump.Value = true;
     }
 
-    private void OnPlayerEnterDoor(InputAction.CallbackContext context)
+    private void OnPlayerGoThroughDoor(InputAction.CallbackContext context)
     {
+        if(!IsOwner && !isDebugScene) return;
+
+        HandlePlayerFinishingLevelRpc();
+        hasPickaxe.Value = false;
         OnExit?.Invoke(OwnerClientId);
+        if (!IsServer)
+        {
+            RequestDespawnRpc();
+        }
+        else
+        {
+            DespawnOnServer();
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void HandlePlayerFinishingLevelRpc()
+    {
+        HandleReleasePickaxe();
+        //characterBody.SetActive(false);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestDespawnRpc()
+    {
+        DespawnOnServer();
+    }
+
+    private void DespawnOnServer()
+    {
+        GetComponent<NetworkObject>().Despawn(gameObject);
     }
 
 }
