@@ -8,6 +8,7 @@ using UnityEngine;
 public class Breakable : NetworkBehaviour
 {
     [SerializeField] protected NetworkVariable<int> health = new NetworkVariable<int>(3);
+    [SerializeField] protected LayerMask playerLayer;
     private NetworkVariable<bool> itsBroken = new NetworkVariable<bool>(false);
     protected NetworkObject networkObject;
 
@@ -23,7 +24,23 @@ public class Breakable : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        //PlayerNetwork.OnMining += OnHit;
+    }
+
+    protected void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer != Mathf.Log(playerLayer, 2)) return;
+        if (collision.GetComponent<PlayerNetwork>().hasPickaxe.Value == false) return;
+        
         PlayerNetwork.OnMining += OnHit;
+    }
+
+    protected void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer != Mathf.Log(playerLayer, 2)) return;
+        if (collision.GetComponent<PlayerNetwork>().hasPickaxe.Value == false) return;
+
+        PlayerNetwork.OnMining -= OnHit;
     }
 
     protected virtual void OnHit(ulong player)
@@ -40,6 +57,10 @@ public class Breakable : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// OnBreak is called only on the server once the breakable's health reaches 0.
+    /// </summary>
+    /// <param name="player">The player who broke the breakable.</param>
     protected virtual void OnBreak(ulong player)
     {
         itsBroken.Value = true;

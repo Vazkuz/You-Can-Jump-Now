@@ -42,7 +42,7 @@ public class PlayerNetwork : NetworkBehaviour
     public NetworkVariable<bool> hasPickaxe { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
 
     [Header("Mineral Variables")]
-    [SerializeField] private LayerMask mineralLayer;
+    [SerializeField] private LayerMask breakableLayer;
     [SerializeField] private bool canMine = false;
     public static event Action<ulong> OnMining;
 
@@ -120,7 +120,7 @@ public class PlayerNetwork : NetworkBehaviour
             inputActions.PlayerControls.grabPickaxe.performed += OnGrabbingPickaxe;
         }
 
-        if (collision.gameObject.layer == Mathf.Log(mineralLayer, 2))
+        if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = true;
         }
@@ -134,7 +134,7 @@ public class PlayerNetwork : NetworkBehaviour
             inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
         }
 
-        if (collision.gameObject.layer == Mathf.Log(mineralLayer, 2))
+        if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = false;
         }
