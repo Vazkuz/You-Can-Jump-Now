@@ -24,7 +24,6 @@ public class Breakable : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        //PlayerNetwork.OnMining += OnHit;
     }
 
     protected void OnTriggerEnter2D(Collider2D collision)
