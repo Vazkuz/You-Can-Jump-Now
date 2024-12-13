@@ -70,7 +70,6 @@ public class Door : Breakable
     [Rpc(SendTo.Everyone)]
     private void AllPlayersWentThroughRpc()
     {
-        print("Todos los jugadores pasaron yee");
         OnAllPlayersFinish?.Invoke();
     }
 

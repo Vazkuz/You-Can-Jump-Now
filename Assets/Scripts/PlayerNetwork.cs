@@ -62,12 +62,10 @@ public class PlayerNetwork : NetworkBehaviour
         inputActions = new PlayerInputActions();
         hasPickaxe.Value = false;
         canJump.Value = false;
-        print("Awake");
     }
 
     protected void Start()
     {
-        print("Start");
         rb = GetComponent<Rigidbody2D>();
         _isFlying = !IsGrounded();
         mayJumpTime = 0f;
@@ -77,11 +75,9 @@ public class PlayerNetwork : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        print("OnNetworkSpawn");
     }
     protected void OnEnable()
     {
-        print("OnEnable");
         inputActions.Enable();
         moveAction = inputActions.PlayerControls.move;
 
