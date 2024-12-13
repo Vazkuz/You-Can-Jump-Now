@@ -57,6 +57,9 @@ public class PlayerNetwork : NetworkBehaviour
     [Header("Lobby Vars")]
     [SerializeField] SpriteRenderer hostSign;
 
+
+    public static event Action<ulong> OnPlayerPrefabSpawn;
+
     protected void Awake()
     {
         inputActions = new PlayerInputActions();
@@ -75,6 +78,7 @@ public class PlayerNetwork : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        OnPlayerPrefabSpawn?.Invoke(OwnerClientId);
     }
     protected void OnEnable()
     {
