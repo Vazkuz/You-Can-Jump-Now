@@ -9,7 +9,6 @@ public class Pickaxe : NetworkBehaviour
 {
     private Rigidbody2D rb;
     [SerializeField] private Collider2D triggerCollider;
-    [SerializeField] private Collider2D bodyCollider;
     private NetworkObject networkObject;
     private bool justSpawned = true;
 
@@ -32,7 +31,6 @@ public class Pickaxe : NetworkBehaviour
         {
             rb.isKinematic = false;
             triggerCollider.enabled = true;
-            bodyCollider.enabled = true;
 
             // Giving the pickaxe back to the server.
             if (!IsServer) RequestChangeOwnershipRpc(NetworkManager.ServerClientId);
@@ -45,7 +43,6 @@ public class Pickaxe : NetworkBehaviour
 
         rb.isKinematic = true;
         triggerCollider.enabled = false;
-        bodyCollider.enabled = false;
 
         transform.localPosition = parentNetworkObject.GetComponent<PlayerNetwork>().Hand.localPosition;
         if (!IsServer) RequestChangeOwnershipRpc(parentNetworkObject.OwnerClientId);

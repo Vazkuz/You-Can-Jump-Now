@@ -86,7 +86,7 @@ public class TestRelay : MonoBehaviour
         }
     }
 
-    public async void LeaveRelay()
+    public void LeaveRelay()
     {
         NetworkManager.Singleton.Shutdown();
 

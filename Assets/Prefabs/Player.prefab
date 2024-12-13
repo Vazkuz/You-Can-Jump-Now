@@ -134,7 +134,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1002304928
+  GlobalObjectIdHash: 4135639652
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -156,13 +156,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isDebugScene: 0
+  characterBody: {fileID: 1765013333894700930}
+  hand: {fileID: 701516440609365872}
   moveSpeedGround: 6
   moveSpeedAir: 3
   jumpForce: 9
   fallMultiplier: 2
   lowJumpMultiplier: 4
   coyoteTime: 0.083
-  canJump: 0
+  canJump:
+    m_InternalValue: 0
   boxSize: {x: 0.5, y: 0.16}
   castDistance: 0.45
   groundLayer:
@@ -171,11 +174,14 @@ MonoBehaviour:
   pickaxeLayer:
     serializedVersion: 2
     m_Bits: 64
-  hand: {fileID: 701516440609365872}
-  mineralLayer:
+  breakableLayer:
     serializedVersion: 2
     m_Bits: 512
   canMine: 0
+  exitLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  insideDoorFrame: 0
   hostSign: {fileID: 0}
 --- !u!114 &-3340672397291402816
 MonoBehaviour:
