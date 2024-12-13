@@ -111,7 +111,6 @@ public class PlayerNetwork : NetworkBehaviour
     public override void OnDestroy()
     {
         base.OnDestroy();
-        inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
     }
 
     /// <summary>
@@ -277,6 +276,9 @@ public class PlayerNetwork : NetworkBehaviour
         hasPickaxe.Value = false;
     }
 
+    /// <summary>
+    ///  OJO CON ESTA FUNCION: Actualmente ejectua para todos, ya que usa ReleasePickaxeOnServer. Chequear esta funcion para mas detalles.
+    /// </summary>
     private void HandleReleasePickaxe()
     {
         if (!IsServer)
@@ -298,6 +300,10 @@ public class PlayerNetwork : NetworkBehaviour
         ReleasePickaxeOnServer();
     }
 
+    /// <summary>
+    /// OJO CON ESTA FUNCION: Actualmente intenta remover el padre de Pickaxe, sin importar si el jugador que llama la funcion es o no su padre.
+    /// Podria ser necesario hacer una verificacion de esto antes de hacer TryRemoveParent. Por ahora no es necesario, pero revisitar esto.
+    /// </summary>
     private void ReleasePickaxeOnServer()
     {
         FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TryRemoveParent();
@@ -356,8 +362,11 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if(!IsOwner && !isDebugScene) return;
 
-        HandlePlayerFinishingLevelRpc();
-        hasPickaxe.Value = false;
+        if (hasPickaxe.Value)
+        {
+            HandleReleasePickaxe();
+            hasPickaxe.Value = false;
+        }
         OnExit?.Invoke(OwnerClientId);
         if (!IsServer)
         {
@@ -367,13 +376,6 @@ public class PlayerNetwork : NetworkBehaviour
         {
             DespawnOnServer();
         }
-    }
-
-    [Rpc(SendTo.Everyone)]
-    private void HandlePlayerFinishingLevelRpc()
-    {
-        HandleReleasePickaxe();
-        //characterBody.SetActive(false);
     }
 
     [Rpc(SendTo.Server)]
