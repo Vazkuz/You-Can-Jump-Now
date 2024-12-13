@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Level : MonoBehaviour
@@ -11,10 +12,7 @@ public class Level : MonoBehaviour
     public Transform goldPos { get { return _goldPos; } private set { _goldPos = value; } }
     [SerializeField] private Transform _goldPos;
 
-    public Transform player1Pos { get { return _player1Pos; } private set { _player1Pos = value; } }
-    [SerializeField] private Transform _player1Pos;
-
-    public Transform player2Pos { get { return _player2Pos; } private set { _player2Pos = value; } }
-    [SerializeField] private Transform _player2Pos;
+    public List<Transform> playersPos { get { return _playersPos; } private set { _playersPos = value; } }
+    [SerializeField] private List<Transform> _playersPos;
 
 }
