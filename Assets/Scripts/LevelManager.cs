@@ -12,7 +12,9 @@ public class LevelManager : NetworkBehaviour
     private NetworkVariable<int> playersSetUp = new NetworkVariable<int>(0);
     [SerializeField] private List<Level> levelList;
     [SerializeField] private Transform mainCamera;
-    [SerializeField] private Transform pickaxe;
+    [SerializeField] private Transform pickaxePrefab;
+    private Transform pickaxeObjectTransform; // Just to check if there's already a pickaxe in the scene.
+    private NetworkVariable<bool> isTherePickaxe = new NetworkVariable<bool>(false);
     // Start is called before the first frame update
     protected void Start()
     {
@@ -22,10 +24,11 @@ public class LevelManager : NetworkBehaviour
 
     private async Task WaitUntilSpawnedAsync()
     {
+        //Wait until the Level Manager has spawned
         NetworkObject networkObject = GetComponent<NetworkObject>();
         while (!networkObject.IsSpawned)
         {
-            await Task.Yield(); // Yield control back to the main thread
+            await Task.Yield();
         }
     }
 
@@ -54,5 +57,23 @@ public class LevelManager : NetworkBehaviour
         Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
         player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
         playersSetUp.Value++;
+
+        if (playersSetUp.Value < 2) return;
+
+        SetUpPickaxeAndGold();
+    }
+
+    private void SetUpPickaxeAndGold()
+    {
+        //First we check if the pickaxe has already been spawned. If not, we have to spawn it.
+        if (pickaxeObjectTransform == null)
+        {
+            pickaxeObjectTransform = Instantiate(pickaxePrefab);
+            pickaxeObjectTransform.GetComponent<NetworkObject>().Spawn(true);
+            isTherePickaxe.Value = true;
+        }
+
+        //Then, we change its position. We do this so we can just move it if it's already there.
+        pickaxeObjectTransform.position = levelList[nLevel.Value].pickaxePos.position;
     }
 }
