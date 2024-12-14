@@ -15,6 +15,7 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] private Transform pickaxePrefab;
     private Transform pickaxeObjectTransform; // Just to check if there's already a pickaxe in the scene.
     private NetworkVariable<bool> isTherePickaxe = new NetworkVariable<bool>(false);
+    private bool justConnecting = true;
     // Start is called before the first frame update
     protected void Start()
     {
@@ -38,14 +39,22 @@ public class LevelManager : NetworkBehaviour
         //LOADSCREEN FUNCTIONALITY GOES HERE (WHEN WE HAVE IT)
         playersSetUp.Value = 0;
         SetUpLevel(levelList[nLevel]);
+
+        if (justConnecting) return;
+
+        SetUpPlayersPos();
+        SetUpPickaxe();
+    }
+
+    private void SetUpPlayersPos()
+    {
+        //configurar la posicion de ambos jugadores
     }
 
     private void SetUpLevel(Level level)
     {
         if (!IsServer) return;
         mainCamera.position = level.cameraPos.position;
-        //pickaxe.position = level.pickaxePos.position;
-        // Añadir GOLD POSITION aquí
     }
 
     private async void SetUpPlayerPos(ulong playerId)
@@ -58,12 +67,19 @@ public class LevelManager : NetworkBehaviour
         player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
         playersSetUp.Value++;
 
-        if (playersSetUp.Value < 2) return;
+        if (playersSetUp.Value <= 1)
+        {
+            SetUpPickaxe();
+            // Añadir GOLD POSITION aquí
+        }
 
-        SetUpPickaxeAndGold();
+        if (playersSetUp.Value >= 2)
+        {
+            justConnecting = false;
+        }
     }
 
-    private void SetUpPickaxeAndGold()
+    private void SetUpPickaxe()
     {
         //First we check if the pickaxe has already been spawned. If not, we have to spawn it.
         if (pickaxeObjectTransform == null)
