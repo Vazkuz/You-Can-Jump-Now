@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Unity.Netcode;
+using Unity.Services.Matchmaker.Models;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
@@ -19,8 +21,9 @@ public class LevelManager : NetworkBehaviour
     // Start is called before the first frame update
     protected void Start()
     {
-        LoadLevel(nLevel.Value);
+        LoadLevel();
         PlayerNetwork.OnPlayerPrefabSpawn += SetUpPlayerPos;
+        Door.OnAllPlayersFinish += HandlePlayersFinishedLevel;//
     }
 
     private async Task WaitUntilSpawnedAsync()
@@ -33,12 +36,20 @@ public class LevelManager : NetworkBehaviour
         }
     }
 
-    private void LoadLevel(int nLevel)
+    private void HandlePlayersFinishedLevel()
+    {
+        if (!IsServer) return;
+        // Check dependencias (pickaxe, gold). If everything is ok, continue.
+        nLevel.Value++;
+        LoadLevel();
+    }
+
+    private void LoadLevel()
     {
         if (!IsServer) return;
         //LOADSCREEN FUNCTIONALITY GOES HERE (WHEN WE HAVE IT)
         playersSetUp.Value = 0;
-        SetUpLevel(levelList[nLevel]);
+        SetUpLevel(levelList[nLevel.Value]);
 
         if (justConnecting) return;
 
@@ -48,12 +59,25 @@ public class LevelManager : NetworkBehaviour
 
     private void SetUpPlayersPos()
     {
-        //configurar la posicion de ambos jugadores
+        List<ulong> playersId = NetworkManager.Singleton.ConnectedClients.Keys.ToList();
+
+        foreach (ulong playerId in playersId)
+        {
+            Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
+            player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
+            playersSetUp.Value++;
+        }
+
     }
 
     private void SetUpLevel(Level level)
     {
         if (!IsServer) return;
+        level.gameObject.SetActive(true);
+        foreach (Level _level in levelList)
+        {
+            if(_level != level) _level.gameObject.SetActive(false);
+        }
         mainCamera.position = level.cameraPos.position;
     }
 
@@ -81,7 +105,7 @@ public class LevelManager : NetworkBehaviour
 
     private void SetUpPickaxe()
     {
-        //First we check if the pickaxe has already been spawned. If not, we have to spawn it.
+        //First we check if the pickaxe has already been spawned. If not, we spawn it.
         if (pickaxeObjectTransform == null)
         {
             pickaxeObjectTransform = Instantiate(pickaxePrefab);

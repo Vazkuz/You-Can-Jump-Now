@@ -11,7 +11,7 @@ public class Door : Breakable
     [SerializeField] private SpriteRenderer rockSprite;
     [SerializeField] private GameObject exit;
 
-    private NetworkVariable<bool> exitOpen = new NetworkVariable<bool>(false);
+    [SerializeField] private NetworkVariable<bool> exitOpen = new NetworkVariable<bool>(false);
     [SerializeField] private NetworkVariable<int> nPlayersFinished = new NetworkVariable<int>(0);
 
     public static event Action OnAllPlayersFinish;
@@ -19,7 +19,35 @@ public class Door : Breakable
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        if (exitOpen.Value)
+        {
+            exitOpen.Value = true;
+            DoorOpenRpc();
+            return;
+        }
         exit.SetActive(false);
+    }
+
+    protected override void OnTriggerEnter2D(Collider2D collision)
+    {
+        base.OnTriggerEnter2D(collision);
+
+        if (!exitOpen.Value) return;
+        PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
+    }
+
+    protected override void OnTriggerExit2D(Collider2D collision)
+    {
+        base.OnTriggerExit2D(collision);
+
+        if (!exitOpen.Value) return;
+
+        PlayerNetwork.OnExit -= OnPlayerGoThroughDoor;
+    }
+
+    protected void OnDisable()
+    {
+        PlayerNetwork.OnExit -= OnPlayerGoThroughDoor;
     }
 
     //Manejar aqui las animaciones. Utilizando, por ejemplo, OnHit y OnBreak
@@ -28,6 +56,7 @@ public class Door : Breakable
         base.OnBreak(player); // en principio si la puerta se destruye ya no se puede regenerar
         exitOpen.Value = true;
         DoorOpenRpc();
+        PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
         //networkObject.Despawn(gameObject);
     }
 
@@ -36,7 +65,6 @@ public class Door : Breakable
     {
         exit.SetActive(true);
         rockSprite.enabled = false;
-        PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
     }
 
     private void OnPlayerGoThroughDoor(ulong player)
@@ -70,6 +98,7 @@ public class Door : Breakable
     [Rpc(SendTo.Everyone)]
     private void AllPlayersWentThroughRpc()
     {
+        print("todos pasaron");
         OnAllPlayersFinish?.Invoke();
     }
 

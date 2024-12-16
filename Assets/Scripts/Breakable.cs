@@ -26,20 +26,25 @@ public class Breakable : NetworkBehaviour
         base.OnNetworkSpawn();
     }
 
-    protected void OnTriggerEnter2D(Collider2D collision)
+    protected virtual void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.layer != Mathf.Log(playerLayer, 2)) return;
-        if (collision.GetComponent<PlayerNetwork>().hasPickaxe.Value == false) return;
-        
-        PlayerNetwork.OnMining += OnHit;
+
+        if (collision.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+        {
+            PlayerNetwork.OnMining += OnHit;
+        }
     }
 
-    protected void OnTriggerExit2D(Collider2D collision)
+    protected virtual void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.gameObject.layer != Mathf.Log(playerLayer, 2)) return;
-        if (collision.GetComponent<PlayerNetwork>().hasPickaxe.Value == false) return;
 
-        PlayerNetwork.OnMining -= OnHit;
+        if (collision.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+        {
+            PlayerNetwork.OnMining -= OnHit;
+        }
+
     }
 
     protected virtual void OnHit(ulong player)
