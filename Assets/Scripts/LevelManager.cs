@@ -17,13 +17,14 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] private Transform pickaxePrefab;
     private Transform pickaxeObjectTransform; // Just to check if there's already a pickaxe in the scene.
     private NetworkVariable<bool> isTherePickaxe = new NetworkVariable<bool>(false);
-    private bool justConnecting = true;
+    //private bool justConnecting = true;
     // Start is called before the first frame update
     protected void Start()
     {
         LoadLevel();
-        PlayerNetwork.OnPlayerPrefabSpawn += SetUpPlayerPos;
-        Door.OnAllPlayersFinish += HandlePlayersFinishedLevel;//
+        //PlayerNetwork.OnPlayerPrefabSpawn += AsyncSetupPlayerPos;
+        Door.OnAllPlayersFinish += HandlePlayersFinishedLevel;
+        print("Estamos en el level " + nLevel.Value);
     }
 
     private async Task WaitUntilSpawnedAsync()
@@ -51,7 +52,7 @@ public class LevelManager : NetworkBehaviour
         playersSetUp.Value = 0;
         SetUpLevel(levelList[nLevel.Value]);
 
-        if (justConnecting) return;
+        //if (justConnecting) return;
 
         SetUpPlayersPos();
         SetUpPickaxe();
@@ -63,11 +64,23 @@ public class LevelManager : NetworkBehaviour
 
         foreach (ulong playerId in playersId)
         {
+            //SetupPlayerPosRpc(playerId);
             Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
+            player.GetComponent<PlayerNetwork>().ShowGameObject();
+            //player.gameObject.SetActive(true);
+            print("New position: " + levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
             player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
             playersSetUp.Value++;
         }
 
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void SetupPlayerPosRpc(ulong playerId)
+    {
+        Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
+        player.gameObject.SetActive(true);
+        player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
     }
 
     private void SetUpLevel(Level level)
@@ -81,7 +94,7 @@ public class LevelManager : NetworkBehaviour
         mainCamera.position = level.cameraPos.position;
     }
 
-    private async void SetUpPlayerPos(ulong playerId)
+    private async void AsyncSetupPlayerPos(ulong playerId)
     {
         await WaitUntilSpawnedAsync();
 
@@ -91,16 +104,16 @@ public class LevelManager : NetworkBehaviour
         player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
         playersSetUp.Value++;
 
-        if (playersSetUp.Value <= 1)
-        {
-            SetUpPickaxe();
-            // Añadir GOLD POSITION aquí
-        }
+        //if (playersSetUp.Value <= 1)
+        //{
+        //    SetUpPickaxe();
+        //    // Añadir GOLD POSITION aquí
+        //}
 
-        if (playersSetUp.Value >= 2)
-        {
-            justConnecting = false;
-        }
+        //if (playersSetUp.Value >= 2)
+        //{
+        //    justConnecting = false;
+        //}
     }
 
     private void SetUpPickaxe()

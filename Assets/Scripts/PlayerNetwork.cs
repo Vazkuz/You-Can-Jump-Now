@@ -114,6 +114,7 @@ public class PlayerNetwork : NetworkBehaviour
 
     public override void OnDestroy()
     {
+        print("destroyed");
         base.OnDestroy();
     }
 
@@ -372,25 +373,24 @@ public class PlayerNetwork : NetworkBehaviour
             hasPickaxe.Value = false;
         }
         OnExit?.Invoke(OwnerClientId);
-        if (!IsServer)
-        {
-            RequestDespawnRpc();
-        }
-        else
-        {
-            DespawnOnServer();
-        }
+        HideRpc();
     }
 
-    [Rpc(SendTo.Server)]
-    private void RequestDespawnRpc()
+    [Rpc(SendTo.Everyone)]
+    private void HideRpc()
     {
-        DespawnOnServer();
+        gameObject.SetActive(false);
     }
 
-    private void DespawnOnServer()
+    public void ShowGameObject()
     {
-        GetComponent<NetworkObject>().Despawn(gameObject);
+        ShowRpc();
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void ShowRpc()
+    {
+        gameObject.SetActive(true);
     }
 
 }
