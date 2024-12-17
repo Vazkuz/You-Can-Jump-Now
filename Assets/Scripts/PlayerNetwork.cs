@@ -382,15 +382,16 @@ public class PlayerNetwork : NetworkBehaviour
         gameObject.SetActive(false);
     }
 
-    public void ShowGameObject()
+    public void SetUpPlayer(Vector3 newPos)
     {
-        ShowRpc();
+        SetUpPlayerRpc(newPos);
     }
 
     [Rpc(SendTo.Everyone)]
-    private void ShowRpc()
+    private void SetUpPlayerRpc(Vector3 newPos)
     {
         gameObject.SetActive(true);
+        transform.position = newPos;
     }
 
 }

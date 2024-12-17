@@ -66,21 +66,11 @@ public class LevelManager : NetworkBehaviour
         {
             //SetupPlayerPosRpc(playerId);
             Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
-            player.GetComponent<PlayerNetwork>().ShowGameObject();
-            //player.gameObject.SetActive(true);
-            print("New position: " + levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
-            player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
+            player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
+
             playersSetUp.Value++;
         }
 
-    }
-
-    [Rpc(SendTo.Everyone)]
-    private void SetupPlayerPosRpc(ulong playerId)
-    {
-        Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
-        player.gameObject.SetActive(true);
-        player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
     }
 
     private void SetUpLevel(Level level)
