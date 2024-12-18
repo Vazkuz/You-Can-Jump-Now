@@ -70,7 +70,6 @@ public class LevelManager : NetworkBehaviour
             //SetupPlayerPosRpc(playerId);
             Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
             player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
-
             playersSetUp.Value++;
         }
 
@@ -79,9 +78,7 @@ public class LevelManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void SetUpLevelRpc()
     {
-        print("nLevel.Value: " + nLevel.Value);
         Level level = levelList[nLevel.Value];
-        print("Level name: " + level.name);
         level.gameObject.SetActive(true);
         foreach (Level _level in levelList)
         {

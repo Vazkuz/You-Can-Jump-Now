@@ -82,19 +82,26 @@ public class PlayerNetwork : NetworkBehaviour
     }
     protected void OnEnable()
     {
+        SubscribeToActions();
+    }
+
+    private void SubscribeToActions()
+    {
         inputActions.Enable();
         moveAction = inputActions.PlayerControls.move;
-
         jumpAction = inputActions.PlayerControls.jump;
-
         inputActions.PlayerControls.jump.performed += OnJump;
-
         Mineral.OnFinishedMine += OnFinishedMine;
     }
 
     protected void OnDisable()
     {
         // Unsubscribe to all events to prevent Memory Leaks.
+        UnsubscribeFromActions();
+    }
+
+    private void UnsubscribeFromActions()
+    {
         inputActions.PlayerControls.jump.performed -= OnJump;
         inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
         inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
@@ -366,14 +373,15 @@ public class PlayerNetwork : NetworkBehaviour
             HandleReleasePickaxe();
             hasPickaxe.Value = false;
         }
-        OnExit?.Invoke(OwnerClientId);
         HideRpc();
+        OnExit?.Invoke(OwnerClientId);
     }
 
     [Rpc(SendTo.Everyone)]
     private void HideRpc()
     {
-        gameObject.SetActive(false);
+        characterBody.SetActive(false);
+        UnsubscribeFromActions();
     }
 
     public void SetUpPlayer(Vector3 newPos)
@@ -384,8 +392,9 @@ public class PlayerNetwork : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void SetUpPlayerRpc(Vector3 newPos)
     {
-        gameObject.SetActive(true);
         transform.position = newPos;
+        characterBody.SetActive(true);
+        SubscribeToActions();
     }
 
 }

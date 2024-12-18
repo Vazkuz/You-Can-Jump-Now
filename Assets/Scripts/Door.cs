@@ -12,13 +12,20 @@ public class Door : Breakable
     [SerializeField] private GameObject exit;
 
     [SerializeField] private NetworkVariable<bool> exitOpen = new NetworkVariable<bool>(false);
-    [SerializeField] private NetworkVariable<int> nPlayersFinished = new NetworkVariable<int>(0);
+    //[SerializeField] private NetworkVariable<int> nPlayersFinished = new NetworkVariable<int>(0);
+    [SerializeField] private NetworkList<ulong> finishPlayers;
 
     public static event Action OnAllPlayersFinish;
+
+    protected void Awake()
+    {
+        finishPlayers = new NetworkList<ulong>();
+    }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+
         if (!exitOpen.Value) //puerta cerrada
         {
             exit.SetActive(false);
@@ -52,6 +59,12 @@ public class Door : Breakable
     {
         PlayerNetwork.OnExit -= OnPlayerGoThroughDoor;
     }
+
+    //public override void OnDestroy()
+    //{
+    //    base.OnDestroy();
+    //    finishPlayers.Dispose();
+    //}
 
     //Manejar aqui las animaciones. Utilizando, por ejemplo, OnHit y OnBreak
     protected override void OnBreak(ulong player)
@@ -108,15 +121,18 @@ public class Door : Breakable
 
     private void HandlePlayerGoThrough(ulong player)
     {
-        nPlayersFinished.Value++;
-        if (nPlayersFinished.Value >= 2)
+        if (finishPlayers.Contains(player)) return;
+
+        finishPlayers.Add(player);
+        //nPlayersFinished.Value++;
+        if (finishPlayers.Count >= 2)//nPlayersFinished.Value >= 2)
         {
             AllPlayersWentThroughRpc();
         }
 
     }
 
-    [Rpc(SendTo.Everyone)]
+    [Rpc(SendTo.Server)]
     private void AllPlayersWentThroughRpc()
     {
         OnAllPlayersFinish?.Invoke();
