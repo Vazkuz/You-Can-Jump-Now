@@ -112,11 +112,6 @@ public class PlayerNetwork : NetworkBehaviour
 
     }
 
-    public override void OnDestroy()
-    {
-        base.OnDestroy();
-    }
-
     /// <summary>
     /// Drawing the cube that is used to check if player is grounded.
     /// </summary>
