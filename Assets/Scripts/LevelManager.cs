@@ -18,13 +18,16 @@ public class LevelManager : NetworkBehaviour
     private Transform pickaxeObjectTransform; // Just to check if there's already a pickaxe in the scene.
     private NetworkVariable<bool> isTherePickaxe = new NetworkVariable<bool>(false);
     //private bool justConnecting = true;
-    // Start is called before the first frame update
+    // Start is called before OnNetworkSpawn (on-scene object)
     protected void Start()
     {
         LoadLevel();
         //PlayerNetwork.OnPlayerPrefabSpawn += AsyncSetupPlayerPos;
         Door.OnAllPlayersFinish += HandlePlayersFinishedLevel;
-        print("Estamos en el level " + nLevel.Value);
+    }
+    protected void OnDisable()
+    {
+        Door.OnAllPlayersFinish -= HandlePlayersFinishedLevel;
     }
 
     private async Task WaitUntilSpawnedAsync()
@@ -41,7 +44,6 @@ public class LevelManager : NetworkBehaviour
     {
         if (!IsServer) return;
         // Check dependencias (pickaxe, gold). If everything is ok, continue.
-        nLevel.Value++;
         LoadLevel();
     }
 
@@ -50,12 +52,13 @@ public class LevelManager : NetworkBehaviour
         if (!IsServer) return;
         //LOADSCREEN FUNCTIONALITY GOES HERE (WHEN WE HAVE IT)
         playersSetUp.Value = 0;
-        SetUpLevel(levelList[nLevel.Value]);
+        SetUpLevelRpc();
 
         //if (justConnecting) return;
 
         SetUpPlayersPos();
         SetUpPickaxe();
+        nLevel.Value++;
     }
 
     private void SetUpPlayersPos()
@@ -73,9 +76,12 @@ public class LevelManager : NetworkBehaviour
 
     }
 
-    private void SetUpLevel(Level level)
+    [Rpc(SendTo.Everyone)]
+    private void SetUpLevelRpc()
     {
-        if (!IsServer) return;
+        print("nLevel.Value: " + nLevel.Value);
+        Level level = levelList[nLevel.Value];
+        print("Level name: " + level.name);
         level.gameObject.SetActive(true);
         foreach (Level _level in levelList)
         {

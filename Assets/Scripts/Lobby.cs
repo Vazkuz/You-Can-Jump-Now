@@ -12,6 +12,11 @@ public class Lobby : NetworkBehaviour
         Door.OnAllPlayersFinish += StartGame;
     }
 
+    protected void OnDisable()
+    {
+        Door.OnAllPlayersFinish -= StartGame;
+    }
+
     private void StartGame()
     {
         if (!IsServer) return;

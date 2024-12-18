@@ -114,7 +114,6 @@ public class PlayerNetwork : NetworkBehaviour
 
     public override void OnDestroy()
     {
-        print("destroyed");
         base.OnDestroy();
     }
 

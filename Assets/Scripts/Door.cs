@@ -19,13 +19,16 @@ public class Door : Breakable
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        if (exitOpen.Value)
+        if (!exitOpen.Value) //puerta cerrada
         {
-            exitOpen.Value = true;
-            DoorOpenRpc();
+            exit.SetActive(false);
             return;
         }
-        exit.SetActive(false);
+
+        //puerta abierta (desde el comienzo)
+        DoorOpenRpc();
+        //If the exit is open when spawned, then subscribe to OnExit, because it won't be broken.
+        PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
     }
 
     protected override void OnTriggerEnter2D(Collider2D collision)
@@ -56,8 +59,26 @@ public class Door : Breakable
         base.OnBreak(player); // en principio si la puerta se destruye ya no se puede regenerar
         exitOpen.Value = true;
         DoorOpenRpc();
-        PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
+        if (!IsServer)
+        {
+            RequestSubscribeToPlayerRpc();
+        }
+        else
+        {
+            SubscribeToPlayer();
+        }
         //networkObject.Despawn(gameObject);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestSubscribeToPlayerRpc()
+    {
+        SubscribeToPlayer();
+    }
+
+    private void SubscribeToPlayer()
+    {
+        PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
     }
 
     [Rpc(SendTo.Everyone)]
@@ -98,7 +119,6 @@ public class Door : Breakable
     [Rpc(SendTo.Everyone)]
     private void AllPlayersWentThroughRpc()
     {
-        print("todos pasaron");
         OnAllPlayersFinish?.Invoke();
     }
 
