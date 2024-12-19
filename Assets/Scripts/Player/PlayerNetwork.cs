@@ -65,6 +65,7 @@ public class PlayerNetwork : NetworkBehaviour
         inputActions = new PlayerInputActions();
         hasPickaxe.Value = false;
         canJump.Value = false;
+        NetworkManagerUI.OnMenuStateChange += OnMenuStateChange;
     }
 
     protected void Start()
@@ -395,6 +396,17 @@ public class PlayerNetwork : NetworkBehaviour
         transform.position = newPos;
         characterBody.SetActive(true);
         EnableMovement();
+    }
+
+    /// <summary>
+    /// When the menu is on, the player can't move.
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    private void OnMenuStateChange(bool newMenuState)
+    {
+        if (newMenuState) DisableMovement();
+        else EnableMovement(); 
     }
 
 }
