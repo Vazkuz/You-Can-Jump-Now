@@ -27,15 +27,10 @@ public class NetworkManagerUI : NetworkBehaviour
         NetworkManager.OnClientConnectedCallback += ClientSideSetJoinCode;
     }
 
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-    }
-
     protected void OnEnable()
     {
         menuActions.Enable();
-        menuActions.MenuActions.toggleMenu.performed += ToggleMenu;
+        menuActions.MenuActions.toggleMenu.performed += ToggleMenuAction;
         menuParent.SetActive(false);
     }
 
@@ -44,9 +39,14 @@ public class NetworkManagerUI : NetworkBehaviour
         menuActions.Disable();
     }
 
-    private void ToggleMenu(InputAction.CallbackContext context)
+    private void ToggleMenuAction(InputAction.CallbackContext context)
     {
-        menuParent.SetActive(!menuParent.activeSelf);
+        ToggleMenu(!menuParent.activeSelf);
+    }
+
+    private void ToggleMenu(bool newState)
+    {
+        menuParent.SetActive(newState);
         joinMenuBox.SetActive(false);
     }
 
@@ -79,11 +79,16 @@ public class NetworkManagerUI : NetworkBehaviour
         }
     }
 
-    
+    public void CreateLobby()
+    {
+        testRelay.CreateRelay();
+        ToggleMenu(false);
+    }
 
     public void JoinLobby()
     {
         testRelay.JoinRelay(joinCodeStr);
+        ToggleMenu(false);
     }
 
     public void UpdateJoinCode(string joinCodeStr)

@@ -1431,7 +1431,15 @@ PrefabInstance:
     - target: {fileID: 2282348740745312496, guid: e78fdd5cea496284ab9908075b195cbe, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 852394690}
+      objectReference: {fileID: 1381948158}
+    - target: {fileID: 2282348740745312496, guid: e78fdd5cea496284ab9908075b195cbe, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: CreateLobby
+      objectReference: {fileID: 0}
+    - target: {fileID: 2282348740745312496, guid: e78fdd5cea496284ab9908075b195cbe, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: NetworkManagerUI, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 2847447743172240800, guid: e78fdd5cea496284ab9908075b195cbe, type: 3}
       propertyPath: m_Name
       value: NetworkManagerUI
