@@ -207,45 +207,6 @@
                     "isPartOfComposite": false
                 }
             ]
-        },
-        {
-            "name": "MenuActions",
-            "id": "6aa4faf4-846c-4075-86ff-60d3f6b786d9",
-            "actions": [
-                {
-                    "name": "toggleMenu",
-                    "type": "Button",
-                    "id": "a1b284df-ed71-4205-824d-7e48b66a97fb",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "851a519e-da13-4135-af04-863de4ef934a",
-                    "path": "<Gamepad>/start",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "toggleMenu",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "07bcfde1-c25d-4daa-bca2-59dbd82b0f25",
-                    "path": "<Keyboard>/escape",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "toggleMenu",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
         }
     ],
     "controlSchemes": []

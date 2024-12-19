@@ -1,0 +1,45 @@
+{
+    "name": "MenuInputActions",
+    "maps": [
+        {
+            "name": "MenuActions",
+            "id": "56cfacea-cb50-491b-9615-74f7947650fe",
+            "actions": [
+                {
+                    "name": "toggleMenu",
+                    "type": "Button",
+                    "id": "0afba417-c668-499d-9c71-1caf7c4d7823",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d05e1066-3a77-46ca-b421-e4a78ca10370",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "toggleMenu",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "be7f5ca5-44a3-4a17-8b46-5c401cb39283",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "toggleMenu",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

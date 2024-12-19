@@ -230,45 +230,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
-        },
-        {
-            ""name"": ""MenuActions"",
-            ""id"": ""6aa4faf4-846c-4075-86ff-60d3f6b786d9"",
-            ""actions"": [
-                {
-                    ""name"": ""toggleMenu"",
-                    ""type"": ""Button"",
-                    ""id"": ""a1b284df-ed71-4205-824d-7e48b66a97fb"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                }
-            ],
-            ""bindings"": [
-                {
-                    ""name"": """",
-                    ""id"": ""851a519e-da13-4135-af04-863de4ef934a"",
-                    ""path"": ""<Gamepad>/start"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""toggleMenu"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""07bcfde1-c25d-4daa-bca2-59dbd82b0f25"",
-                    ""path"": ""<Keyboard>/escape"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""toggleMenu"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                }
-            ]
         }
     ],
     ""controlSchemes"": []
@@ -280,15 +241,11 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_PlayerControls_enterDoor = m_PlayerControls.FindAction("enterDoor", throwIfNotFound: true);
         m_PlayerControls_grabPickaxe = m_PlayerControls.FindAction("grabPickaxe", throwIfNotFound: true);
         m_PlayerControls_mine = m_PlayerControls.FindAction("mine", throwIfNotFound: true);
-        // MenuActions
-        m_MenuActions = asset.FindActionMap("MenuActions", throwIfNotFound: true);
-        m_MenuActions_toggleMenu = m_MenuActions.FindAction("toggleMenu", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
     {
         Debug.Assert(!m_PlayerControls.enabled, "This will cause a leak and performance issues, PlayerInputActions.PlayerControls.Disable() has not been called.");
-        Debug.Assert(!m_MenuActions.enabled, "This will cause a leak and performance issues, PlayerInputActions.MenuActions.Disable() has not been called.");
     }
 
     public void Dispose()
@@ -424,52 +381,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         }
     }
     public PlayerControlsActions @PlayerControls => new PlayerControlsActions(this);
-
-    // MenuActions
-    private readonly InputActionMap m_MenuActions;
-    private List<IMenuActionsActions> m_MenuActionsActionsCallbackInterfaces = new List<IMenuActionsActions>();
-    private readonly InputAction m_MenuActions_toggleMenu;
-    public struct MenuActionsActions
-    {
-        private @PlayerInputActions m_Wrapper;
-        public MenuActionsActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
-        public InputAction @toggleMenu => m_Wrapper.m_MenuActions_toggleMenu;
-        public InputActionMap Get() { return m_Wrapper.m_MenuActions; }
-        public void Enable() { Get().Enable(); }
-        public void Disable() { Get().Disable(); }
-        public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(MenuActionsActions set) { return set.Get(); }
-        public void AddCallbacks(IMenuActionsActions instance)
-        {
-            if (instance == null || m_Wrapper.m_MenuActionsActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_MenuActionsActionsCallbackInterfaces.Add(instance);
-            @toggleMenu.started += instance.OnToggleMenu;
-            @toggleMenu.performed += instance.OnToggleMenu;
-            @toggleMenu.canceled += instance.OnToggleMenu;
-        }
-
-        private void UnregisterCallbacks(IMenuActionsActions instance)
-        {
-            @toggleMenu.started -= instance.OnToggleMenu;
-            @toggleMenu.performed -= instance.OnToggleMenu;
-            @toggleMenu.canceled -= instance.OnToggleMenu;
-        }
-
-        public void RemoveCallbacks(IMenuActionsActions instance)
-        {
-            if (m_Wrapper.m_MenuActionsActionsCallbackInterfaces.Remove(instance))
-                UnregisterCallbacks(instance);
-        }
-
-        public void SetCallbacks(IMenuActionsActions instance)
-        {
-            foreach (var item in m_Wrapper.m_MenuActionsActionsCallbackInterfaces)
-                UnregisterCallbacks(item);
-            m_Wrapper.m_MenuActionsActionsCallbackInterfaces.Clear();
-            AddCallbacks(instance);
-        }
-    }
-    public MenuActionsActions @MenuActions => new MenuActionsActions(this);
     public interface IPlayerControlsActions
     {
         void OnMove(InputAction.CallbackContext context);
@@ -477,9 +388,5 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnEnterDoor(InputAction.CallbackContext context);
         void OnGrabPickaxe(InputAction.CallbackContext context);
         void OnMine(InputAction.CallbackContext context);
-    }
-    public interface IMenuActionsActions
-    {
-        void OnToggleMenu(InputAction.CallbackContext context);
     }
 }
