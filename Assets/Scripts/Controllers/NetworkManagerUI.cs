@@ -27,6 +27,11 @@ public class NetworkManagerUI : NetworkBehaviour
         NetworkManager.OnClientConnectedCallback += ClientSideSetJoinCode;
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+    }
+
     protected void OnEnable()
     {
         menuActions.Enable();
@@ -34,15 +39,21 @@ public class NetworkManagerUI : NetworkBehaviour
         menuParent.SetActive(false);
     }
 
+    protected void OnDisable()
+    {
+        menuActions.Disable();
+    }
+
     private void ToggleMenu(InputAction.CallbackContext context)
     {
         menuParent.SetActive(!menuParent.activeSelf);
-        DisableJoinIF();
+        joinMenuBox.SetActive(false);
     }
 
     public void EnableJoinIF()
     {
         joinMenuBox.SetActive(true);
+        //joinCode.gameObject.SetActive(false);
     }
 
     public void DisableJoinIF()
@@ -50,6 +61,7 @@ public class NetworkManagerUI : NetworkBehaviour
         joinMenuBox.SetActive(false);
         joinCodeStr = string.Empty;
         joinInputField.text = string.Empty;
+        //joinCode.gameObject.SetActive(true);
     }
 
     [Rpc(SendTo.Everyone)]
