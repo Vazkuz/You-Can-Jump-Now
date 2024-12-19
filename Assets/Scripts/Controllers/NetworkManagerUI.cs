@@ -17,6 +17,8 @@ public class NetworkManagerUI : NetworkBehaviour
     [SerializeField] private TestRelay testRelay;
     private MenuInputActions menuActions;
 
+    public static event Action<bool> OnMenuStateChange;
+
     private string joinCodeStr;
 
     protected void Awake()
@@ -48,6 +50,7 @@ public class NetworkManagerUI : NetworkBehaviour
     {
         menuParent.SetActive(newState);
         joinMenuBox.SetActive(false);
+        OnMenuStateChange?.Invoke(newState);
     }
 
     public void EnableJoinIF()
