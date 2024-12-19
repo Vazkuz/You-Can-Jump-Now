@@ -35,6 +35,9 @@ public class Door : Breakable
         //puerta abierta (desde el comienzo)
         DoorOpenRpc();
         //If the exit is open when spawned, then subscribe to OnExit, because it won't be broken.
+    }
+    protected void OnEnable()
+    {
         PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
     }
 
@@ -51,7 +54,6 @@ public class Door : Breakable
         base.OnTriggerExit2D(collision);
 
         if (!exitOpen.Value) return;
-
         PlayerNetwork.OnExit -= OnPlayerGoThroughDoor;
     }
 
@@ -72,14 +74,14 @@ public class Door : Breakable
         base.OnBreak(player); // en principio si la puerta se destruye ya no se puede regenerar
         exitOpen.Value = true;
         DoorOpenRpc();
-        if (!IsServer)
-        {
-            RequestSubscribeToPlayerRpc();
-        }
-        else
-        {
-            SubscribeToPlayer();
-        }
+        //if (!IsServer)
+        //{
+        //    RequestSubscribeToPlayerRpc();
+        //}
+        //else
+        //{
+        //    SubscribeToPlayer();
+        //}
         //networkObject.Despawn(gameObject);
     }
 
@@ -103,6 +105,7 @@ public class Door : Breakable
 
     private void OnPlayerGoThroughDoor(ulong player)
     {
+        print($"Player {player} went through the door");
         if (!IsServer)
         {
             RequestHandlePlayerGoThroughRpc(player);
@@ -135,6 +138,7 @@ public class Door : Breakable
     [Rpc(SendTo.Server)]
     private void AllPlayersWentThroughRpc()
     {
+        print("All players finished the level.");
         OnAllPlayersFinish?.Invoke();
     }
 
