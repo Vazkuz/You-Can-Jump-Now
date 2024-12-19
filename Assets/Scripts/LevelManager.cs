@@ -17,6 +17,8 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] private Transform pickaxePrefab;
     private Transform pickaxeObjectTransform; // Just to check if there's already a pickaxe in the scene.
     private NetworkVariable<bool> isTherePickaxe = new NetworkVariable<bool>(false);
+
+    public static event Action OnStageFinish;
     //private bool justConnecting = true;
     // Start is called before OnNetworkSpawn (on-scene object)
     protected void Start()
@@ -43,6 +45,13 @@ public class LevelManager : NetworkBehaviour
     private void HandlePlayersFinishedLevel()
     {
         if (!IsServer) return;
+        if(nLevel.Value >= levelList.Count)
+        {
+            print("Se acabo este Stage");
+            OnStageFinish?.Invoke();
+            return;
+        }
+
         // Check dependencias (pickaxe, gold). If everything is ok, continue.
         LoadLevel();
     }
@@ -78,13 +87,13 @@ public class LevelManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void SetUpLevelRpc()
     {
-        Level level = levelList[nLevel.Value];
-        level.gameObject.SetActive(true);
-        foreach (Level _level in levelList)
+        Level currentLevel = levelList[nLevel.Value];
+        currentLevel.gameObject.SetActive(true);
+        foreach (Level level in levelList)
         {
-            if(_level != level) _level.gameObject.SetActive(false);
+            if(level != currentLevel) level.gameObject.SetActive(false);
         }
-        mainCamera.position = level.cameraPos.position;
+        mainCamera.position = currentLevel.cameraPos.position;
     }
 
     private async void AsyncSetupPlayerPos(ulong playerId)

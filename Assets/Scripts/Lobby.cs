@@ -10,6 +10,7 @@ public class Lobby : NetworkBehaviour
     protected void Start()
     {
         Door.OnAllPlayersFinish += StartGame;
+        DontDestroyOnLoad(gameObject);
     }
 
     protected void OnDisable()
@@ -21,9 +22,20 @@ public class Lobby : NetworkBehaviour
     {
         if (!IsServer) return;
 
-        string nextScene = NameFromIndex(SceneManager.GetActiveScene().buildIndex + 1);
+        LoadNextScene();
+        Door.OnAllPlayersFinish -= StartGame;
+        LevelManager.OnStageFinish += OnStageFinish;
+    }
 
+    private void LoadNextScene()
+    {
+        string nextScene = NameFromIndex(SceneManager.GetActiveScene().buildIndex + 1);
         NetworkManager.SceneManager.LoadScene(nextScene, LoadSceneMode.Single);
+    }
+
+    private void OnStageFinish()
+    {
+        LoadNextScene();
     }
 
     private static string NameFromIndex(int BuildIndex)
