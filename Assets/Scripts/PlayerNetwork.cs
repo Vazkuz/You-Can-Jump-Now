@@ -57,6 +57,9 @@ public class PlayerNetwork : NetworkBehaviour
     [Header("Lobby Vars")]
     [SerializeField] SpriteRenderer hostSign;
 
+
+    public static event Action<ulong> OnPlayerPrefabSpawn;
+
     protected void Awake()
     {
         inputActions = new PlayerInputActions();
@@ -75,28 +78,36 @@ public class PlayerNetwork : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        OnPlayerPrefabSpawn?.Invoke(OwnerClientId);
     }
     protected void OnEnable()
     {
-        inputActions.Enable();
-        moveAction = inputActions.PlayerControls.move;
-
-        jumpAction = inputActions.PlayerControls.jump;
-
-        inputActions.PlayerControls.jump.performed += OnJump;
-
+        EnableMovement();
         Mineral.OnFinishedMine += OnFinishedMine;
     }
 
     protected void OnDisable()
     {
         // Unsubscribe to all events to prevent Memory Leaks.
-        inputActions.PlayerControls.jump.performed -= OnJump;
         inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
         inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
         inputActions.PlayerControls.grabPickaxe.performed -= OnReleasingPickaxe;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
         Mineral.OnFinishedMine -= OnFinishedMine;
+        DisableMovement();
+    }
+
+    private void EnableMovement()
+    {
+        inputActions.Enable();
+        moveAction = inputActions.PlayerControls.move;
+        jumpAction = inputActions.PlayerControls.jump;
+        inputActions.PlayerControls.jump.performed += OnJump;
+    }
+
+    private void DisableMovement()
+    {
+        inputActions.PlayerControls.jump.performed -= OnJump;
         inputActions.Disable();
     }
 
@@ -106,11 +117,6 @@ public class PlayerNetwork : NetworkBehaviour
         mayJumpTime -= Time.deltaTime;
         HandleNetworkMovement();
 
-    }
-
-    public override void OnDestroy()
-    {
-        base.OnDestroy();
     }
 
     /// <summary>
@@ -367,26 +373,28 @@ public class PlayerNetwork : NetworkBehaviour
             HandleReleasePickaxe();
             hasPickaxe.Value = false;
         }
+        HideRpc();
         OnExit?.Invoke(OwnerClientId);
-        if (!IsServer)
-        {
-            RequestDespawnRpc();
-        }
-        else
-        {
-            DespawnOnServer();
-        }
     }
 
-    [Rpc(SendTo.Server)]
-    private void RequestDespawnRpc()
+    [Rpc(SendTo.Everyone)]
+    private void HideRpc()
     {
-        DespawnOnServer();
+        characterBody.SetActive(false);
+        DisableMovement();
     }
 
-    private void DespawnOnServer()
+    public void SetUpPlayer(Vector3 newPos)
     {
-        GetComponent<NetworkObject>().Despawn(gameObject);
+        SetUpPlayerRpc(newPos);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void SetUpPlayerRpc(Vector3 newPos)
+    {
+        transform.position = newPos;
+        characterBody.SetActive(true);
+        EnableMovement();
     }
 
 }
