@@ -25,7 +25,7 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private float lowJumpMultiplier = 2f;
     [SerializeField] private float coyoteTime = 0.1f;
-    public NetworkVariable<bool> canJump = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<bool> canJump = new NetworkVariable<bool>(true, default, NetworkVariableWritePermission.Owner);
 
     private float mayJumpTime;
     InputAction moveAction;
@@ -64,7 +64,7 @@ public class PlayerNetwork : NetworkBehaviour
     {
         inputActions = new PlayerInputActions();
         hasPickaxe.Value = false;
-        canJump.Value = false;
+        canJump.Value = true;
         NetworkManagerUI.OnMenuStateChange += OnMenuStateChange;
     }
 
@@ -216,7 +216,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (mayJumpTime <= 0) return; // Check if we are still under coyote time, if not, we can't jump.
         if (insideDoorFrame) return; // El jugador no puede saltar cuando esta dentro de la zona de salida.
 
-        canJump.Value = false;
+        if(hasPickaxe.Value) canJump.Value = false; //If the player has the pickaxe and jumps after being granted a jump, they can't jump anymore.
         rb.velocity = Vector2.right * rb.velocity.x + Vector2.up * jumpForce;
 
     }
@@ -281,6 +281,7 @@ public class PlayerNetwork : NetworkBehaviour
         HandleReleasePickaxe();
 
         hasPickaxe.Value = false;
+        canJump.Value = true;
     }
 
     /// <summary>
