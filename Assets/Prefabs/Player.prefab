@@ -134,7 +134,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4135639652
+  GlobalObjectIdHash: 1002304928
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -165,7 +165,7 @@ MonoBehaviour:
   lowJumpMultiplier: 4
   coyoteTime: 0.083
   canJump:
-    m_InternalValue: 0
+    m_InternalValue: 1
   boxSize: {x: 0.5, y: 0.16}
   castDistance: 0.45
   groundLayer:
