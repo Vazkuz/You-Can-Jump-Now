@@ -30,9 +30,9 @@ public class Grabbable : NetworkBehaviour
             rb.isKinematic = false;
             triggerCollider.enabled = true;
 
-            // Giving the pickaxe back to the server.
+            // Giving the grabbable back to the server.
             if (!IsServer) RequestChangeOwnershipRpc(NetworkManager.ServerClientId);
-            else ChangePickaxeOwnership(NetworkManager.ServerClientId);
+            else ChangeGrabbableOwnership(NetworkManager.ServerClientId);
             return;
         }
 
@@ -44,16 +44,16 @@ public class Grabbable : NetworkBehaviour
 
         transform.localPosition = parentNetworkObject.GetComponent<PlayerNetwork>().Hand.localPosition;
         if (!IsServer) RequestChangeOwnershipRpc(parentNetworkObject.OwnerClientId);
-        else ChangePickaxeOwnership(parentNetworkObject.OwnerClientId);
+        else ChangeGrabbableOwnership(parentNetworkObject.OwnerClientId);
     }
 
     [Rpc(SendTo.Server)]
     private void RequestChangeOwnershipRpc(ulong newClientId)
     {
-        ChangePickaxeOwnership(newClientId);
+        ChangeGrabbableOwnership(newClientId);
     }
 
-    private void ChangePickaxeOwnership(ulong newClientId)
+    private void ChangeGrabbableOwnership(ulong newClientId)
     {
         if (networkObject.OwnerClientId == newClientId) return;
 
