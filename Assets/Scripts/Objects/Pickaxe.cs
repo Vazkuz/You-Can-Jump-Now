@@ -5,7 +5,7 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Pickaxe : NetworkBehaviour
+public class Pickaxe : Grabbable
 {
     private Rigidbody2D rb;
     [SerializeField] private Collider2D triggerCollider;
