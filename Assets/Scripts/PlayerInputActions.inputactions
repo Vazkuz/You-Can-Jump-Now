@@ -33,7 +33,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "grabPickaxe",
+                    "name": "grabObject",
                     "type": "Button",
                     "id": "4ed828e2-4ccc-4989-be93-9c6957af8f91",
                     "expectedControlType": "",
@@ -169,7 +169,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "grabPickaxe",
+                    "action": "grabObject",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -180,7 +180,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "grabPickaxe",
+                    "action": "grabObject",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
