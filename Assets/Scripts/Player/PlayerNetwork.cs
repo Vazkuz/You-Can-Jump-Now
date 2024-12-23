@@ -152,17 +152,6 @@ public class PlayerNetwork : NetworkBehaviour
 
     protected void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
-        {
-            grabbable = FindObjectOfType<Pickaxe>();
-            inputActions.PlayerControls.grabObject.performed += OnGrabObject;
-        }
-        else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
-        {
-            grabbable = FindObjectOfType<Gold>();
-            inputActions.PlayerControls.grabObject.performed += OnGrabObject;
-        }
-
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = true;
@@ -174,21 +163,26 @@ public class PlayerNetwork : NetworkBehaviour
             insideDoorFrame = true;
         }
 
+        if (hasPickaxe.Value || hasGold.Value) return;
+
+        if (!IsOwner && !isDebugScene) return;
+        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
+        {
+            SetGrabbableRpc(true);
+            //grabbable = FindObjectOfType<Pickaxe>();
+            inputActions.PlayerControls.grabObject.performed += OnGrabObject;
+        }
+        else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
+        {
+            SetGrabbableRpc(false);
+            //grabbable = FindObjectOfType<Gold>();
+            inputActions.PlayerControls.grabObject.performed += OnGrabObject;
+        }
+
     }
 
     protected void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
-        {
-            grabbable = null;
-            inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
-        }
-        else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
-        {
-            grabbable = null;
-            inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
-        }
-
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = false;
@@ -198,6 +192,19 @@ public class PlayerNetwork : NetworkBehaviour
         {
             inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
             insideDoorFrame = false;
+        }
+
+        if (!IsOwner && !isDebugScene) return;
+
+        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
+        {
+            if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
+            inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
+        }
+        else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
+        {
+            if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
+            inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         }
     }
     private void HandleNetworkMovement()
@@ -223,6 +230,13 @@ public class PlayerNetwork : NetworkBehaviour
     public bool IsGrounded()
     {
         return Physics2D.BoxCast(transform.position, boxSize, 0, -transform.up, castDistance, groundLayer);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void SetGrabbableRpc(bool pickaxe)
+    {
+        if (pickaxe) grabbable = FindObjectOfType<Pickaxe>();
+        else grabbable = FindObjectOfType<Gold>();
     }
 
     /// <summary>
@@ -275,16 +289,19 @@ public class PlayerNetwork : NetworkBehaviour
 
         inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         inputActions.PlayerControls.grabObject.performed += OnReleasingObject;
-        if(grabbable = FindObjectOfType<Pickaxe>())
+        print(grabbable.name);
+        if(grabbable == FindObjectOfType<Pickaxe>())
         {
+            print("Grabbing pickaxe");
             inputActions.PlayerControls.mine.performed += OnTryingToMine;
             hasPickaxe.Value = true;
         }
         else
         {
+            print("Grabbing gold");
             hasGold.Value = true;
         }
-        grabbable = null;
+        //grabbable = null;
 
     }
 
