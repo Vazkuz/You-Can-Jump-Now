@@ -198,12 +198,12 @@ public class PlayerNetwork : NetworkBehaviour
 
         if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
         {
-            if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
+            //if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
             inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         }
         else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
         {
-            if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
+            //if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
             inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         }
     }
@@ -235,8 +235,10 @@ public class PlayerNetwork : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void SetGrabbableRpc(bool pickaxe)
     {
+        print("llega aqui");
         if (pickaxe) grabbable = FindObjectOfType<Pickaxe>();
         else grabbable = FindObjectOfType<Gold>();
+        print($"Ahora tengo el {grabbable.name}");
     }
 
     /// <summary>
