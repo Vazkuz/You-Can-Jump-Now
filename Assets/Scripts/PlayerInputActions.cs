@@ -56,7 +56,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""grabPickaxe"",
+                    ""name"": ""grabObject"",
                     ""type"": ""Button"",
                     ""id"": ""4ed828e2-4ccc-4989-be93-9c6957af8f91"",
                     ""expectedControlType"": """",
@@ -192,7 +192,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""grabPickaxe"",
+                    ""action"": ""grabObject"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -203,7 +203,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""grabPickaxe"",
+                    ""action"": ""grabObject"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -239,7 +239,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_PlayerControls_move = m_PlayerControls.FindAction("move", throwIfNotFound: true);
         m_PlayerControls_jump = m_PlayerControls.FindAction("jump", throwIfNotFound: true);
         m_PlayerControls_enterDoor = m_PlayerControls.FindAction("enterDoor", throwIfNotFound: true);
-        m_PlayerControls_grabPickaxe = m_PlayerControls.FindAction("grabPickaxe", throwIfNotFound: true);
+        m_PlayerControls_grabObject = m_PlayerControls.FindAction("grabObject", throwIfNotFound: true);
         m_PlayerControls_mine = m_PlayerControls.FindAction("mine", throwIfNotFound: true);
     }
 
@@ -310,7 +310,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerControls_move;
     private readonly InputAction m_PlayerControls_jump;
     private readonly InputAction m_PlayerControls_enterDoor;
-    private readonly InputAction m_PlayerControls_grabPickaxe;
+    private readonly InputAction m_PlayerControls_grabObject;
     private readonly InputAction m_PlayerControls_mine;
     public struct PlayerControlsActions
     {
@@ -319,7 +319,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @move => m_Wrapper.m_PlayerControls_move;
         public InputAction @jump => m_Wrapper.m_PlayerControls_jump;
         public InputAction @enterDoor => m_Wrapper.m_PlayerControls_enterDoor;
-        public InputAction @grabPickaxe => m_Wrapper.m_PlayerControls_grabPickaxe;
+        public InputAction @grabObject => m_Wrapper.m_PlayerControls_grabObject;
         public InputAction @mine => m_Wrapper.m_PlayerControls_mine;
         public InputActionMap Get() { return m_Wrapper.m_PlayerControls; }
         public void Enable() { Get().Enable(); }
@@ -339,9 +339,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @enterDoor.started += instance.OnEnterDoor;
             @enterDoor.performed += instance.OnEnterDoor;
             @enterDoor.canceled += instance.OnEnterDoor;
-            @grabPickaxe.started += instance.OnGrabPickaxe;
-            @grabPickaxe.performed += instance.OnGrabPickaxe;
-            @grabPickaxe.canceled += instance.OnGrabPickaxe;
+            @grabObject.started += instance.OnGrabObject;
+            @grabObject.performed += instance.OnGrabObject;
+            @grabObject.canceled += instance.OnGrabObject;
             @mine.started += instance.OnMine;
             @mine.performed += instance.OnMine;
             @mine.canceled += instance.OnMine;
@@ -358,9 +358,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @enterDoor.started -= instance.OnEnterDoor;
             @enterDoor.performed -= instance.OnEnterDoor;
             @enterDoor.canceled -= instance.OnEnterDoor;
-            @grabPickaxe.started -= instance.OnGrabPickaxe;
-            @grabPickaxe.performed -= instance.OnGrabPickaxe;
-            @grabPickaxe.canceled -= instance.OnGrabPickaxe;
+            @grabObject.started -= instance.OnGrabObject;
+            @grabObject.performed -= instance.OnGrabObject;
+            @grabObject.canceled -= instance.OnGrabObject;
             @mine.started -= instance.OnMine;
             @mine.performed -= instance.OnMine;
             @mine.canceled -= instance.OnMine;
@@ -386,7 +386,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnEnterDoor(InputAction.CallbackContext context);
-        void OnGrabPickaxe(InputAction.CallbackContext context);
+        void OnGrabObject(InputAction.CallbackContext context);
         void OnMine(InputAction.CallbackContext context);
     }
 }

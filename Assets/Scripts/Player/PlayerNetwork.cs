@@ -44,6 +44,12 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private LayerMask pickaxeLayer;
     public NetworkVariable<bool> hasPickaxe { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
 
+    private Grabbable grabbable;
+
+    [Header("Gold Variables")]
+    [SerializeField] private LayerMask goldLayer;
+    public NetworkVariable<bool> hasGold { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
+
     [Header("Mineral Variables")]
     [SerializeField] private LayerMask breakableLayer;
     [SerializeField] private bool canMine = false;
@@ -64,6 +70,7 @@ public class PlayerNetwork : NetworkBehaviour
     {
         inputActions = new PlayerInputActions();
         hasPickaxe.Value = false;
+        hasGold.Value = false;
         canJump.Value = true;
         NetworkManagerUI.OnMenuStateChange += OnMenuStateChange;
     }
@@ -90,9 +97,10 @@ public class PlayerNetwork : NetworkBehaviour
     protected void OnDisable()
     {
         // Unsubscribe to all events to prevent Memory Leaks.
-        inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
+        grabbable = null;
+        inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
-        inputActions.PlayerControls.grabPickaxe.performed -= OnReleasingPickaxe;
+        inputActions.PlayerControls.grabObject.performed -= OnReleasingObject;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
         Mineral.OnFinishedMine -= OnFinishedMine;
         DisableMovement();
@@ -144,11 +152,6 @@ public class PlayerNetwork : NetworkBehaviour
 
     protected void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
-        {
-            inputActions.PlayerControls.grabPickaxe.performed += OnGrabbingPickaxe;
-        }
-
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = true;
@@ -160,15 +163,26 @@ public class PlayerNetwork : NetworkBehaviour
             insideDoorFrame = true;
         }
 
+        if (hasPickaxe.Value || hasGold.Value) return;
+
+        if (!IsOwner && !isDebugScene) return;
+        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
+        {
+            SetGrabbableRpc(true);
+            //grabbable = FindObjectOfType<Pickaxe>();
+            inputActions.PlayerControls.grabObject.performed += OnGrabObject;
+        }
+        else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
+        {
+            SetGrabbableRpc(false);
+            //grabbable = FindObjectOfType<Gold>();
+            inputActions.PlayerControls.grabObject.performed += OnGrabObject;
+        }
+
     }
 
     protected void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
-        {
-            inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
-        }
-
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = false;
@@ -178,6 +192,19 @@ public class PlayerNetwork : NetworkBehaviour
         {
             inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
             insideDoorFrame = false;
+        }
+
+        if (!IsOwner && !isDebugScene) return;
+
+        if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
+        {
+            //if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
+            inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
+        }
+        else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
+        {
+            //if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
+            inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         }
     }
     private void HandleNetworkMovement()
@@ -205,6 +232,15 @@ public class PlayerNetwork : NetworkBehaviour
         return Physics2D.BoxCast(transform.position, boxSize, 0, -transform.up, castDistance, groundLayer);
     }
 
+    [Rpc(SendTo.Everyone)]
+    private void SetGrabbableRpc(bool pickaxe)
+    {
+        print("llega aqui");
+        if (pickaxe) grabbable = FindObjectOfType<Pickaxe>();
+        else grabbable = FindObjectOfType<Gold>();
+        print($"Ahora tengo el {grabbable.name}");
+    }
+
     /// <summary>
     /// Method called when jumping. Subscribed initially on OnEnable
     /// </summary>
@@ -217,6 +253,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (insideDoorFrame) return; // El jugador no puede saltar cuando esta dentro de la zona de salida.
 
         if(hasPickaxe.Value) canJump.Value = false; //If the player has the pickaxe and jumps after being granted a jump, they can't jump anymore.
+        if(hasGold.Value) canJump.Value = false; //If the player has the gold and jumps after being granted a jump, they can't jump anymore.
         rb.velocity = Vector2.right * rb.velocity.x + Vector2.up * jumpForce;
 
     }
@@ -237,7 +274,7 @@ public class PlayerNetwork : NetworkBehaviour
     /// Method to grab the pickaxe. Subscribed only OnTriggerEnter the pickaxe.
     /// </summary>
     /// <param name="context"></param>
-    private void OnGrabbingPickaxe(InputAction.CallbackContext context)
+    private void OnGrabObject(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
 
@@ -252,11 +289,22 @@ public class PlayerNetwork : NetworkBehaviour
             GrabPickaxeOnServer();
         }
 
-        inputActions.PlayerControls.grabPickaxe.performed -= OnGrabbingPickaxe;
-        inputActions.PlayerControls.grabPickaxe.performed += OnReleasingPickaxe;
-        inputActions.PlayerControls.mine.performed += OnTryingToMine;
+        inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
+        inputActions.PlayerControls.grabObject.performed += OnReleasingObject;
+        print(grabbable.name);
+        if(grabbable == FindObjectOfType<Pickaxe>())
+        {
+            print("Grabbing pickaxe");
+            inputActions.PlayerControls.mine.performed += OnTryingToMine;
+            hasPickaxe.Value = true;
+        }
+        else
+        {
+            print("Grabbing gold");
+            hasGold.Value = true;
+        }
+        //grabbable = null;
 
-        hasPickaxe.Value = true;
     }
 
     [Rpc(SendTo.Server)]
@@ -267,54 +315,55 @@ public class PlayerNetwork : NetworkBehaviour
 
     private void GrabPickaxeOnServer()
     {
-        FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TrySetParent(transform);
+        grabbable.GetComponent<NetworkObject>().TrySetParent(transform);
     }
 
     /// <summary>
     /// Method to release the pickaxe. Subscribed when the player has grabbed the pickaxe.
     /// </summary>
     /// <param name="context"></param>
-    private void OnReleasingPickaxe(InputAction.CallbackContext context)
+    private void OnReleasingObject(InputAction.CallbackContext context)
     {
 
         if (!IsOwner && !isDebugScene) return;
-        HandleReleasePickaxe();
+        HandleReleaseObject();
 
-        hasPickaxe.Value = false;
+        if(hasPickaxe.Value) hasPickaxe.Value = false;
+        if (hasGold.Value) hasGold.Value = false;
         canJump.Value = true;
     }
 
     /// <summary>
     ///  OJO CON ESTA FUNCION: Actualmente ejectua para todos, ya que usa ReleasePickaxeOnServer. Chequear esta funcion para mas detalles.
     /// </summary>
-    private void HandleReleasePickaxe()
+    private void HandleReleaseObject()
     {
         if (!IsServer)
         {
-            RequestReleasePickaxeRpc();
+            RequestReleaseObjectRpc();
         }
         else
         {
-            ReleasePickaxeOnServer();
+            ReleaseObjectOnServer();
         }
 
-        inputActions.PlayerControls.grabPickaxe.performed -= OnReleasingPickaxe;
+        inputActions.PlayerControls.grabObject.performed -= OnReleasingObject;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
     }
 
     [Rpc(SendTo.Server)]
-    private void RequestReleasePickaxeRpc()
+    private void RequestReleaseObjectRpc()
     {
-        ReleasePickaxeOnServer();
+        ReleaseObjectOnServer();
     }
 
     /// <summary>
-    /// OJO CON ESTA FUNCION: Actualmente intenta remover el padre de Pickaxe, sin importar si el jugador que llama la funcion es o no su padre.
+    /// OJO CON ESTA FUNCION: Actualmente intenta remover el padre del objecto grabbable, sin importar si el jugador que llama la funcion es o no su padre.
     /// Podria ser necesario hacer una verificacion de esto antes de hacer TryRemoveParent. Por ahora no es necesario, pero revisitar esto.
     /// </summary>
-    private void ReleasePickaxeOnServer()
+    private void ReleaseObjectOnServer()
     {
-        FindObjectOfType<Pickaxe>().GetComponent<NetworkObject>().TryRemoveParent();
+        grabbable.GetComponent<NetworkObject>().TryRemoveParent();
     }
 
     /// <summary>
@@ -369,11 +418,13 @@ public class PlayerNetwork : NetworkBehaviour
     private void OnPlayerGoThroughDoor(InputAction.CallbackContext context)
     {
         if(!IsOwner && !isDebugScene) return;
-
-        if (hasPickaxe.Value)
+        
+        //REVISAR ESTO MAS ADELANTE
+        if (hasPickaxe.Value || hasGold.Value)
         {
-            HandleReleasePickaxe();
-            hasPickaxe.Value = false;
+            HandleReleaseObject();
+            if(hasPickaxe.Value) hasPickaxe.Value = false;
+            if(hasGold.Value) hasGold.Value = false;
         }
         HideRpc();
         OnExit?.Invoke(OwnerClientId);

@@ -16,7 +16,11 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] private Transform mainCamera;
     [SerializeField] private Transform pickaxePrefab;
     private Transform pickaxeObjectTransform; // Just to check if there's already a pickaxe in the scene.
-    private NetworkVariable<bool> isTherePickaxe = new NetworkVariable<bool>(false);
+    //private NetworkVariable<bool> isTherePickaxe = new NetworkVariable<bool>(false);
+
+    [SerializeField] private Transform goldPrefab;
+    private Transform goldObjectTransform; // Just to check if there's already a pickaxe in the scene.
+    //private NetworkVariable<bool> isThereGold = new NetworkVariable<bool>(false);
 
     public static event Action OnStageFinish;
     //private bool justConnecting = true;
@@ -66,7 +70,8 @@ public class LevelManager : NetworkBehaviour
         //if (justConnecting) return;
 
         SetUpPlayersPos();
-        SetUpPickaxe();
+        SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[nLevel.Value].pickaxePos.position);
+        SetUpObject(goldObjectTransform, goldPrefab, levelList[nLevel.Value].goldPos.position);
         nLevel.Value++;
     }
 
@@ -118,17 +123,17 @@ public class LevelManager : NetworkBehaviour
         //}
     }
 
-    private void SetUpPickaxe()
+    private void SetUpObject(Transform objectTransform, Transform objectPrefab, Vector3 setupPos)
     {
         //First we check if the pickaxe has already been spawned. If not, we spawn it.
-        if (pickaxeObjectTransform == null)
+        if (objectTransform == null)
         {
-            pickaxeObjectTransform = Instantiate(pickaxePrefab);
-            pickaxeObjectTransform.GetComponent<NetworkObject>().Spawn(true);
-            isTherePickaxe.Value = true;
+            objectTransform = Instantiate(objectPrefab);
+            objectTransform.GetComponent<NetworkObject>().Spawn(true);
+            //isTherePickaxe.Value = true;
         }
 
         //Then, we change its position. We do this so we can just move it if it's already there.
-        pickaxeObjectTransform.position = levelList[nLevel.Value].pickaxePos.position;
+        objectTransform.position = setupPos;
     }
 }
