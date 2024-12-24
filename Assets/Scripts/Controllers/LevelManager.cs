@@ -70,8 +70,12 @@ public class LevelManager : NetworkBehaviour
         //if (justConnecting) return;
 
         SetUpPlayersPos();
-        SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[nLevel.Value].pickaxePos.position);
-        SetUpObject(goldObjectTransform, goldPrefab, levelList[nLevel.Value].goldPos.position);
+
+        if(!FindObjectOfType<Pickaxe>()) 
+            SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[nLevel.Value].pickaxePos.position);
+
+        if (!FindObjectOfType<Gold>())
+            SetUpObject(goldObjectTransform, goldPrefab, levelList[nLevel.Value].goldPos.position);
         nLevel.Value++;
     }
 
