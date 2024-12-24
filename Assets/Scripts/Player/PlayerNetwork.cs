@@ -413,13 +413,13 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if(!IsOwner && !isDebugScene) return;
         
-        //REVISAR ESTO MAS ADELANTE
-        if (hasPickaxe.Value || hasGold.Value)
-        {
-            HandleReleaseObject();
-            if(hasPickaxe.Value) hasPickaxe.Value = false;
-            if(hasGold.Value) hasGold.Value = false;
-        }
+        //REVISAR ESTO MAS ADELANTE (desde el punto de vista de diseño)
+        //if (hasPickaxe.Value || hasGold.Value)
+        //{
+        //    HandleReleaseObject();
+        //    if(hasPickaxe.Value) hasPickaxe.Value = false;
+        //    if(hasGold.Value) hasGold.Value = false;
+        //}
         HideRpc();
         OnExit?.Invoke(OwnerClientId);
     }
@@ -428,6 +428,7 @@ public class PlayerNetwork : NetworkBehaviour
     private void HideRpc()
     {
         characterBody.SetActive(false);
+        //if(hasGold.Value || hasPickaxe.Value) grabbable.gameObject.SetActive(false);
         DisableMovement();
     }
 
