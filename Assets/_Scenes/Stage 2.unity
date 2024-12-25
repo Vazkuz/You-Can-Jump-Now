@@ -2822,6 +2822,7 @@ MonoBehaviour:
   - {fileID: 3079533}
   mainCamera: {fileID: 77682060}
   pickaxePrefab: {fileID: 5080277437636149844, guid: bdce0fbd6cbe8fb4796630b0427aca51, type: 3}
+  goldPrefab: {fileID: 371269110849871737, guid: d18474d65114a5748b5e3b7e8a1619cd, type: 3}
 --- !u!114 &1863206708
 MonoBehaviour:
   m_ObjectHideFlags: 0
