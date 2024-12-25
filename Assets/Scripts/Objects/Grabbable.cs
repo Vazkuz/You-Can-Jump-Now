@@ -9,6 +9,7 @@ public class Grabbable : NetworkBehaviour
     [SerializeField] protected Collider2D triggerCollider;
     private NetworkObject networkObject;
     private bool justSpawned = true;
+    public SpriteRenderer body;
     // Start is called before the first frame update
     protected virtual void Start()
     {
