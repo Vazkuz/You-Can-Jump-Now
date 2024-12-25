@@ -231,10 +231,9 @@ public class PlayerNetwork : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void SetGrabbableRpc(bool pickaxe)
     {
-        print("llega aqui");
         if (pickaxe) grabbable = FindObjectOfType<Pickaxe>();
         else grabbable = FindObjectOfType<Gold>();
-        print($"Ahora tengo el {grabbable.name}");
+        print($"Player {OwnerClientId} has grabbed {grabbable.name}");
     }
 
     /// <summary>
@@ -287,16 +286,13 @@ public class PlayerNetwork : NetworkBehaviour
 
         inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         inputActions.PlayerControls.grabObject.performed += OnReleaseObject;
-        print(grabbable.name);
         if(grabbable == FindObjectOfType<Pickaxe>())
         {
-            print("Grabbing pickaxe");
             inputActions.PlayerControls.mine.performed += OnTryingToMine;
             hasPickaxe.Value = true;
         }
         else
         {
-            print("Grabbing gold");
             hasGold.Value = true;
         }
     }
