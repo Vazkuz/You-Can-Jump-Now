@@ -114,4 +114,9 @@ public class Door : Breakable
         OnAllPlayersFinish?.Invoke();
     }
 
+    public void CleanFinishPlayers()
+    {
+        finishPlayers.Clear();
+    }
+
 }
