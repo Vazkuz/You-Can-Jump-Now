@@ -15,4 +15,6 @@ public class Level : MonoBehaviour
     public List<Transform> playersPos { get { return _playersPos; } private set { _playersPos = value; } }
     [SerializeField] private List<Transform> _playersPos;
 
+    public Door door { get { return _door; } private set { _door = value; } }
+    [SerializeField] private Door _door;
 }
