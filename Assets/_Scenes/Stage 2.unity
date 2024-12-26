@@ -163,6 +163,7 @@ MonoBehaviour:
   _playersPos:
   - {fileID: 1579958162}
   - {fileID: 697628455}
+  _door: {fileID: 1769476725}
 --- !u!4 &3079534
 Transform:
   m_ObjectHideFlags: 0
@@ -236,6 +237,7 @@ MonoBehaviour:
   _playersPos:
   - {fileID: 1963955566}
   - {fileID: 1340403089}
+  _door: {fileID: 1057753841}
 --- !u!1 &43333626
 GameObject:
   m_ObjectHideFlags: 0
@@ -2716,6 +2718,7 @@ MonoBehaviour:
   _playersPos:
   - {fileID: 1447507573}
   - {fileID: 1562719817}
+  _door: {fileID: 628016987}
 --- !u!4 &1782992727
 Transform:
   m_ObjectHideFlags: 0
