@@ -13,6 +13,7 @@ public class LevelManager : NetworkBehaviour
     private NetworkVariable<int> nLevel =  new NetworkVariable<int>(0);
     private NetworkVariable<int> playersSetUp = new NetworkVariable<int>(0);
     [SerializeField] private List<Level> levelList;
+    private Door currentDoor;
     [SerializeField] private Transform mainCamera;
     [SerializeField] private Transform pickaxePrefab;
     private Transform pickaxeObjectTransform; // Just to check if there's already a pickaxe in the scene.
@@ -21,7 +22,6 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] private Transform goldPrefab;
     private Transform goldObjectTransform; // Just to check if there's already a pickaxe in the scene.
     //private NetworkVariable<bool> isThereGold = new NetworkVariable<bool>(false);
-    private int dependencies = 0;
 
     public static event Action OnStageFinish;
     //private bool justConnecting = true;
@@ -84,18 +84,24 @@ public class LevelManager : NetworkBehaviour
         if (!goldDependency && !pickaxeDependency)
         {
             // Avisar que no hay pico ni oro y respawnear ambos jugadores en la puerta
+            SetUpPlayersPos(false);
+            currentDoor.CleanFinishPlayers();
             return;
         }
 
         if (!goldDependency)
         {
             // Avisar que no hay oro y respawnear ambos jugadores en la puerta
+            SetUpPlayersPos(false);
+            currentDoor.CleanFinishPlayers();
             return;
         }
 
         if (!pickaxeDependency)
         {
             // Avisar que no hay pico y respawnear ambos jugadores en la puerta
+            SetUpPlayersPos(false);
+            currentDoor.CleanFinishPlayers();
             return;
         }
 
@@ -126,7 +132,7 @@ public class LevelManager : NetworkBehaviour
         nLevel.Value++;
     }
 
-    private void SetUpPlayersPos()
+    private void SetUpPlayersPos(bool newLevel = true)
     {
         List<ulong> playersId = NetworkManager.Singleton.ConnectedClients.Keys.ToList();
 
@@ -134,8 +140,15 @@ public class LevelManager : NetworkBehaviour
         {
             //SetupPlayerPosRpc(playerId);
             Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
-            player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
-            playersSetUp.Value++;
+            if (newLevel)
+            {
+                player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
+                playersSetUp.Value++;
+            }
+            else
+            {
+                player.GetComponent<PlayerNetwork>().SetUpPlayer(player.transform.position);
+            }
         }
 
     }
@@ -144,6 +157,7 @@ public class LevelManager : NetworkBehaviour
     private void SetUpLevelRpc()
     {
         Level currentLevel = levelList[nLevel.Value];
+        currentDoor = currentLevel.door;
         currentLevel.gameObject.SetActive(true);
         foreach (Level level in levelList)
         {
