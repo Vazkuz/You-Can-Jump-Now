@@ -21,6 +21,7 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] private Transform goldPrefab;
     private Transform goldObjectTransform; // Just to check if there's already a pickaxe in the scene.
     //private NetworkVariable<bool> isThereGold = new NetworkVariable<bool>(false);
+    private int dependencies = 0;
 
     public static event Action OnStageFinish;
     //private bool justConnecting = true;
@@ -36,15 +37,15 @@ public class LevelManager : NetworkBehaviour
         Door.OnAllPlayersFinish -= HandlePlayersFinishedLevel;
     }
 
-    private async Task WaitUntilSpawnedAsync()
-    {
-        //Wait until the Level Manager has spawned
-        NetworkObject networkObject = GetComponent<NetworkObject>();
-        while (!networkObject.IsSpawned)
-        {
-            await Task.Yield();
-        }
-    }
+    //private async Task WaitUntilSpawnedAsync()
+    //{
+    //    //Wait until the Level Manager has spawned
+    //    NetworkObject networkObject = GetComponent<NetworkObject>();
+    //    while (!networkObject.IsSpawned)
+    //    {
+    //        await Task.Yield();
+    //    }
+    //}
 
     private void HandlePlayersFinishedLevel()
     {
@@ -57,6 +58,52 @@ public class LevelManager : NetworkBehaviour
         }
 
         // Check dependencias (pickaxe, gold). If everything is ok, continue.
+        bool goldDependency = false;
+        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value)
+        {
+            goldDependency = true;
+        }
+
+        if (NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value)
+        {
+            goldDependency = true;
+        }
+
+        // Check dependencias (pickaxe, gold). If everything is ok, continue.
+        bool pickaxeDependency = false;
+        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+        {
+            pickaxeDependency = true;
+        }
+
+        if (NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+        {
+            pickaxeDependency = true;
+        }
+
+        if (!goldDependency && !pickaxeDependency)
+        {
+            // Avisar que no hay pico ni oro y respawnear ambos jugadores en la puerta
+            return;
+        }
+
+        if (!goldDependency)
+        {
+            // Avisar que no hay oro y respawnear ambos jugadores en la puerta
+            return;
+        }
+
+        if (!pickaxeDependency)
+        {
+            // Avisar que no hay pico y respawnear ambos jugadores en la puerta
+            return;
+        }
+
+
+        //foreach (ulong clients in NetworkManager.ConnectedClients.Keys.ToList())
+        //{
+        //    if()
+        //}
         LoadLevel();
     }
 
@@ -105,27 +152,27 @@ public class LevelManager : NetworkBehaviour
         mainCamera.position = currentLevel.cameraPos.position;
     }
 
-    private async void AsyncSetupPlayerPos(ulong playerId)
-    {
-        await WaitUntilSpawnedAsync();
+    //private async void AsyncSetupPlayerPos(ulong playerId)
+    //{
+    //    await WaitUntilSpawnedAsync();
 
-        if(!IsServer) return;
+    //    if(!IsServer) return;
 
-        Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
-        player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
-        playersSetUp.Value++;
+    //    Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
+    //    player.position = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
+    //    playersSetUp.Value++;
 
-        //if (playersSetUp.Value <= 1)
-        //{
-        //    SetUpPickaxe();
-        //    // Añadir GOLD POSITION aquí
-        //}
+    //    //if (playersSetUp.Value <= 1)
+    //    //{
+    //    //    SetUpPickaxe();
+    //    //    // Añadir GOLD POSITION aquí
+    //    //}
 
-        //if (playersSetUp.Value >= 2)
-        //{
-        //    justConnecting = false;
-        //}
-    }
+    //    //if (playersSetUp.Value >= 2)
+    //    //{
+    //    //    justConnecting = false;
+    //    //}
+    //}
 
     private void SetUpObject(Transform objectTransform, Transform objectPrefab, Vector3 setupPos)
     {
