@@ -81,36 +81,33 @@ public class LevelManager : NetworkBehaviour
             pickaxeDependency = true;
         }
 
+        // If all dependencies are correct, than the new level is loaded and nothing else happens.
+        if(goldDependency && pickaxeDependency)
+        {
+            LoadLevel();
+            return;
+        }
+
+        // Otherwise, we need to check which dependency is not correct, and we inform that to the players.
+
         if (!goldDependency && !pickaxeDependency)
         {
-            // Avisar que no hay pico ni oro y respawnear ambos jugadores en la puerta
-            SetUpPlayersPos(false);
-            currentDoor.CleanFinishPlayers();
-            return;
+            // Avisar que no hay pico ni oro
         }
 
         if (!goldDependency)
         {
-            // Avisar que no hay oro y respawnear ambos jugadores en la puerta
-            SetUpPlayersPos(false);
-            currentDoor.CleanFinishPlayers();
-            return;
+            // Avisar que no hay oro
         }
 
         if (!pickaxeDependency)
         {
-            // Avisar que no hay pico y respawnear ambos jugadores en la puerta
-            SetUpPlayersPos(false);
-            currentDoor.CleanFinishPlayers();
-            return;
+            // Avisar que no hay pico
         }
 
-
-        //foreach (ulong clients in NetworkManager.ConnectedClients.Keys.ToList())
-        //{
-        //    if()
-        //}
-        LoadLevel();
+        // Finally, we "respawn" the players and clean the door info.
+        SetUpPlayersPos(false);
+        currentDoor.CleanFinishPlayers();
     }
 
     private void LoadLevel()
