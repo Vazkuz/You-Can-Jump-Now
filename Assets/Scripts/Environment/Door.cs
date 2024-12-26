@@ -69,11 +69,6 @@ public class Door : Breakable
         DoorOpenRpc();
     }
 
-    private void SubscribeToPlayer()
-    {
-        PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
-    }
-
     [Rpc(SendTo.Everyone)]
     private void DoorOpenRpc()
     {
