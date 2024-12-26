@@ -100,7 +100,7 @@ public class PlayerNetwork : NetworkBehaviour
         grabbable = null;
         inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         inputActions.PlayerControls.enterDoor.performed -= OnPlayerGoThroughDoor;
-        inputActions.PlayerControls.grabObject.performed -= OnReleasingObject;
+        inputActions.PlayerControls.grabObject.performed -= OnReleaseObject;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
         Mineral.OnFinishedMine -= OnFinishedMine;
         DisableMovement();
@@ -169,13 +169,11 @@ public class PlayerNetwork : NetworkBehaviour
         if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
         {
             SetGrabbableRpc(true);
-            //grabbable = FindObjectOfType<Pickaxe>();
             inputActions.PlayerControls.grabObject.performed += OnGrabObject;
         }
         else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
         {
             SetGrabbableRpc(false);
-            //grabbable = FindObjectOfType<Gold>();
             inputActions.PlayerControls.grabObject.performed += OnGrabObject;
         }
 
@@ -198,12 +196,10 @@ public class PlayerNetwork : NetworkBehaviour
 
         if (collision.gameObject.layer == Mathf.Log(pickaxeLayer, 2))
         {
-            //if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
             inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         }
         else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
         {
-            //if (!hasPickaxe.Value && !hasGold.Value) grabbable = null;
             inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         }
     }
@@ -235,10 +231,9 @@ public class PlayerNetwork : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void SetGrabbableRpc(bool pickaxe)
     {
-        print("llega aqui");
         if (pickaxe) grabbable = FindObjectOfType<Pickaxe>();
         else grabbable = FindObjectOfType<Gold>();
-        print($"Ahora tengo el {grabbable.name}");
+        print($"Player {OwnerClientId} has grabbed {grabbable.name}");
     }
 
     /// <summary>
@@ -290,21 +285,16 @@ public class PlayerNetwork : NetworkBehaviour
         }
 
         inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
-        inputActions.PlayerControls.grabObject.performed += OnReleasingObject;
-        print(grabbable.name);
+        inputActions.PlayerControls.grabObject.performed += OnReleaseObject;
         if(grabbable == FindObjectOfType<Pickaxe>())
         {
-            print("Grabbing pickaxe");
             inputActions.PlayerControls.mine.performed += OnTryingToMine;
             hasPickaxe.Value = true;
         }
         else
         {
-            print("Grabbing gold");
             hasGold.Value = true;
         }
-        //grabbable = null;
-
     }
 
     [Rpc(SendTo.Server)]
@@ -322,7 +312,7 @@ public class PlayerNetwork : NetworkBehaviour
     /// Method to release the pickaxe. Subscribed when the player has grabbed the pickaxe.
     /// </summary>
     /// <param name="context"></param>
-    private void OnReleasingObject(InputAction.CallbackContext context)
+    private void OnReleaseObject(InputAction.CallbackContext context)
     {
 
         if (!IsOwner && !isDebugScene) return;
@@ -347,7 +337,7 @@ public class PlayerNetwork : NetworkBehaviour
             ReleaseObjectOnServer();
         }
 
-        inputActions.PlayerControls.grabObject.performed -= OnReleasingObject;
+        inputActions.PlayerControls.grabObject.performed -= OnReleaseObject;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
     }
 
@@ -419,13 +409,13 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if(!IsOwner && !isDebugScene) return;
         
-        //REVISAR ESTO MAS ADELANTE
-        if (hasPickaxe.Value || hasGold.Value)
-        {
-            HandleReleaseObject();
-            if(hasPickaxe.Value) hasPickaxe.Value = false;
-            if(hasGold.Value) hasGold.Value = false;
-        }
+        //REVISAR ESTO MAS ADELANTE (desde el punto de vista de diseño)
+        //if (hasPickaxe.Value || hasGold.Value)
+        //{
+        //    HandleReleaseObject();
+        //    if(hasPickaxe.Value) hasPickaxe.Value = false;
+        //    if(hasGold.Value) hasGold.Value = false;
+        //}
         HideRpc();
         OnExit?.Invoke(OwnerClientId);
     }
@@ -434,6 +424,7 @@ public class PlayerNetwork : NetworkBehaviour
     private void HideRpc()
     {
         characterBody.SetActive(false);
+        if (hasGold.Value || hasPickaxe.Value) grabbable.body.enabled = false;
         DisableMovement();
     }
 
@@ -447,6 +438,7 @@ public class PlayerNetwork : NetworkBehaviour
     {
         transform.position = newPos;
         characterBody.SetActive(true);
+        if (hasGold.Value || hasPickaxe.Value) grabbable.body.enabled = true;
         EnableMovement();
     }
 

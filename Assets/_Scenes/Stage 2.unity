@@ -163,6 +163,7 @@ MonoBehaviour:
   _playersPos:
   - {fileID: 1579958162}
   - {fileID: 697628455}
+  _door: {fileID: 1769476725}
 --- !u!4 &3079534
 Transform:
   m_ObjectHideFlags: 0
@@ -236,6 +237,7 @@ MonoBehaviour:
   _playersPos:
   - {fileID: 1963955566}
   - {fileID: 1340403089}
+  _door: {fileID: 1057753841}
 --- !u!1 &43333626
 GameObject:
   m_ObjectHideFlags: 0
@@ -2716,6 +2718,7 @@ MonoBehaviour:
   _playersPos:
   - {fileID: 1447507573}
   - {fileID: 1562719817}
+  _door: {fileID: 628016987}
 --- !u!4 &1782992727
 Transform:
   m_ObjectHideFlags: 0
@@ -2822,6 +2825,7 @@ MonoBehaviour:
   - {fileID: 3079533}
   mainCamera: {fileID: 77682060}
   pickaxePrefab: {fileID: 5080277437636149844, guid: bdce0fbd6cbe8fb4796630b0427aca51, type: 3}
+  goldPrefab: {fileID: 371269110849871737, guid: d18474d65114a5748b5e3b7e8a1619cd, type: 3}
 --- !u!114 &1863206708
 MonoBehaviour:
   m_ObjectHideFlags: 0
