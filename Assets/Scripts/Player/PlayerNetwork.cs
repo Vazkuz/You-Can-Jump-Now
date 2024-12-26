@@ -277,11 +277,11 @@ public class PlayerNetwork : NetworkBehaviour
 
         if (!IsServer)
         {
-            RequestGrabPickaxeRpc();
+            RequestGrabObjectRpc();
         }
         else
         {
-            GrabPickaxeOnServer();
+            GrabObjectOnServer();
         }
 
         inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
@@ -298,18 +298,18 @@ public class PlayerNetwork : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    private void RequestGrabPickaxeRpc()
+    private void RequestGrabObjectRpc()
     {
-        GrabPickaxeOnServer();
+        GrabObjectOnServer();
     }
 
-    private void GrabPickaxeOnServer()
+    private void GrabObjectOnServer()
     {
         grabbable.GetComponent<NetworkObject>().TrySetParent(transform);
     }
 
     /// <summary>
-    /// Method to release the pickaxe. Subscribed when the player has grabbed the pickaxe.
+    /// Method to release object (pickaxe or gold). Subscribed when the player has grabbed an object (gold or pickaxe).
     /// </summary>
     /// <param name="context"></param>
     private void OnReleaseObject(InputAction.CallbackContext context)
