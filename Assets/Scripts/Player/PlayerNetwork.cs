@@ -44,11 +44,14 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private LayerMask pickaxeLayer;
     public NetworkVariable<bool> hasPickaxe { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
 
-    private Grabbable grabbable;
-
     [Header("Gold Variables")]
     [SerializeField] private LayerMask goldLayer;
     public NetworkVariable<bool> hasGold { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
+
+    [Header("Grabbed variables")]
+    private Grabbable grabbable;
+    [SerializeField] private GrabbedObject pickaxeSO;
+    [SerializeField] private GrabbedObject goldSO;
 
     [Header("Mineral Variables")]
     [SerializeField] private LayerMask breakableLayer;
@@ -275,15 +278,6 @@ public class PlayerNetwork : NetworkBehaviour
 
         canJump.Value = false;
 
-        if (!IsServer)
-        {
-            RequestGrabObjectRpc();
-        }
-        else
-        {
-            GrabObjectOnServer();
-        }
-
         inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         inputActions.PlayerControls.grabObject.performed += OnReleaseObject;
         if(grabbable == FindObjectOfType<Pickaxe>())
@@ -294,6 +288,17 @@ public class PlayerNetwork : NetworkBehaviour
         else
         {
             hasGold.Value = true;
+        }
+
+        ShowGrabbedObjectRpc(hasPickaxe.Value);
+
+        if (!IsServer)
+        {
+            RequestGrabObjectRpc();
+        }
+        else
+        {
+            GrabObjectOnServer();
         }
     }
 
@@ -306,6 +311,21 @@ public class PlayerNetwork : NetworkBehaviour
     private void GrabObjectOnServer()
     {
         grabbable.GetComponent<NetworkObject>().TrySetParent(transform);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void ShowGrabbedObjectRpc(bool hasPickaxe)
+    {
+        if (hasPickaxe)
+        {
+            hand.GetComponent<SpriteRenderer>().sprite = pickaxeSO.objectImage;
+        }
+        else
+        {
+            hand.GetComponent<SpriteRenderer>().sprite = goldSO.objectImage;
+        }
+
+        grabbable.body.enabled = false;
     }
 
     /// <summary>
@@ -424,7 +444,6 @@ public class PlayerNetwork : NetworkBehaviour
     private void HideRpc()
     {
         characterBody.SetActive(false);
-        if (hasGold.Value || hasPickaxe.Value) grabbable.body.enabled = false;
         DisableMovement();
     }
 
