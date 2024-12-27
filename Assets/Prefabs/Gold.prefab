@@ -175,6 +175,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   triggerCollider: {fileID: 6921126029498120709}
   body: {fileID: 8648584763390485112}
+  grabbedObject: {fileID: 11400000, guid: d168bca9c2d96aa43ba143826d795fc7, type: 2}
 --- !u!1 &8598275672860580630
 GameObject:
   m_ObjectHideFlags: 0

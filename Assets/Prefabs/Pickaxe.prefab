@@ -305,3 +305,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   triggerCollider: {fileID: 8557423013729598273}
   body: {fileID: 4183633988301985805}
+  grabbedObject: {fileID: 11400000, guid: 98ae8a6ac8d10364e9cbb10eff4fafd6, type: 2}

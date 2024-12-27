@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using UnityEditor;
 using UnityEngine;
 
 public class Grabbable : NetworkBehaviour
@@ -10,13 +11,34 @@ public class Grabbable : NetworkBehaviour
     private NetworkObject networkObject;
     private bool justSpawned = true;
     public SpriteRenderer body;
+    [SerializeField] private GrabbedObject grabbedObject;
+
+    protected void OnValidate()
+    {
+        UpdateSprite();
+    }
+
+    private void UpdateSprite()
+    {
+        // Ensure we have a SpriteRenderer and update it in the editor
+        if (body == null)
+        {
+            body = GetComponent<SpriteRenderer>();
+        }
+
+        if (body != null && grabbedObject != null)
+        {
+            body.sprite = grabbedObject.objectImage;
+        }
+    }
+
     // Start is called before the first frame update
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         networkObject = GetComponent<NetworkObject>();
     }
-    // Start is called before the first frame update
+
     public override void OnNetworkObjectParentChanged(NetworkObject parentNetworkObject)
     {
         base.OnNetworkObjectParentChanged(parentNetworkObject);
