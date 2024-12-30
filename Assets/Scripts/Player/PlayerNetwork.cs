@@ -348,23 +348,27 @@ public class PlayerNetwork : NetworkBehaviour
     /// </summary>
     private void HandleReleaseObject()
     {
-        if (!IsServer)
-        {
-            RequestReleaseObjectRpc();
-        }
-        else
-        {
-            ReleaseObjectOnServer();
-        }
+        grabbable.transform.position = hand.transform.position;
+        RequestReleaseObjectRpc();
+        //if (!IsServer)
+        //{
+        //    RequestReleaseObjectRpc();
+        //}
+        //else
+        //{
+        //    ReleaseObjectOnServer();
+        //}
 
         inputActions.PlayerControls.grabObject.performed -= OnReleaseObject;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
     }
 
-    [Rpc(SendTo.Server)]
+    [Rpc(SendTo.Everyone)]
     private void RequestReleaseObjectRpc()
     {
-        ReleaseObjectOnServer();
+        grabbable.GetComponent<NetworkObject>().TryRemoveParent();
+        hand.GetComponent<SpriteRenderer>().sprite = null;
+        //ReleaseObjectOnServer();
     }
 
     /// <summary>

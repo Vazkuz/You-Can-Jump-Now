@@ -48,26 +48,38 @@ public class Grabbable : NetworkBehaviour
             justSpawned = false;
             return;
         }
-        else if (transform.parent == null)
+        else if (transform.parent == null) //This section occurs when a player releases the grabbable
         {
-            rb.isKinematic = false;
-            triggerCollider.enabled = true;
-
-            // Giving the grabbable back to the server.
-            if (!IsServer) RequestChangeOwnershipRpc(NetworkManager.ServerClientId);
-            else ChangeGrabbableOwnership(NetworkManager.ServerClientId);
+            HandleGrabbableReleased();
             return;
         }
 
         if (parentNetworkObject == null) return;
         if (parentNetworkObject.GetComponent<PlayerNetwork>() == null) return;
 
+        HandleGrabbableGrabbed(parentNetworkObject);
+    }
+
+    private void HandleGrabbableGrabbed(NetworkObject parentNetworkObject)
+    {
         rb.isKinematic = true;
         triggerCollider.enabled = false;
 
         transform.localPosition = parentNetworkObject.GetComponent<PlayerNetwork>().Hand.localPosition;
         if (!IsServer) RequestChangeOwnershipRpc(parentNetworkObject.OwnerClientId);
         else ChangeGrabbableOwnership(parentNetworkObject.OwnerClientId);
+    }
+
+    private void HandleGrabbableReleased()
+    {
+        rb.isKinematic = false;
+        triggerCollider.enabled = true;
+
+        // Giving the grabbable back to the server.
+        if (!IsServer) RequestChangeOwnershipRpc(NetworkManager.ServerClientId);
+        else ChangeGrabbableOwnership(NetworkManager.ServerClientId);
+
+        body.enabled = true;
     }
 
     [Rpc(SendTo.Server)]
