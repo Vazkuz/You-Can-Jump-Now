@@ -334,7 +334,6 @@ public class PlayerNetwork : NetworkBehaviour
     /// <param name="context"></param>
     private void OnReleaseObject(InputAction.CallbackContext context)
     {
-
         if (!IsOwner && !isDebugScene) return;
         HandleReleaseObject();
 
