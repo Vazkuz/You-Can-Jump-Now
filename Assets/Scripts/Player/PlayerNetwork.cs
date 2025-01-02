@@ -347,7 +347,7 @@ public class PlayerNetwork : NetworkBehaviour
     /// </summary>
     private void HandleReleaseObject()
     {
-        grabbable.transform.position = hand.transform.position;
+        //grabbable.transform.position = hand.transform.position;
         RequestReleaseObjectRpc();
         //if (!IsServer)
         //{
