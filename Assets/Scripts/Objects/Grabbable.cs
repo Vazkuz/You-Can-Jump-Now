@@ -23,14 +23,6 @@ public class Grabbable : NetworkBehaviour
         UpdateSprite();
     }
 
-    // Start is called before the first frame update
-    protected virtual void Start()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        networkObject = GetComponent<NetworkObject>();
-        tokenSource = new CancellationTokenSource();
-    }
-
     private void UpdateSprite()
     {
         // Ensure we have a SpriteRenderer and update it in the editor
@@ -45,10 +37,41 @@ public class Grabbable : NetworkBehaviour
         }
     }
 
+    // Start is called before the first frame update
+    protected virtual void Start()
+    {
+        PlayerNetwork.OnShowLocalGrabbable += OnHideNetworkGrabbable;
+        PlayerNetwork.OnHideLocalGrabbable += OnShowNetworkGrabbable;
+        rb = GetComponent<Rigidbody2D>();
+        networkObject = GetComponent<NetworkObject>();
+        tokenSource = new CancellationTokenSource();
+    }
+
+    private void OnHideNetworkGrabbable(ulong newOwnerId)
+    {
+        rb.isKinematic = true;
+        triggerCollider.enabled = false;
+        isParented = true;
+        if (!IsServer) RequestChangeOwnershipRpc(newOwnerId);
+        else ChangeGrabbableOwnership(newOwnerId);
+    }
+
+    private void OnShowNetworkGrabbable()
+    {
+        rb.isKinematic = false;
+        triggerCollider.enabled = true;
+        isParented = false;
+
+        // Giving the grabbable back to the server.
+        if (!IsServer) RequestChangeOwnershipRpc(NetworkManager.ServerClientId);
+        else ChangeGrabbableOwnership(NetworkManager.ServerClientId);
+
+        body.enabled = true;
+    }
+
+    //This section will occur only when the host grabs a grabbable
     public override void OnNetworkObjectParentChanged(NetworkObject parentNetworkObject)
     {
-        base.OnNetworkObjectParentChanged(parentNetworkObject);
-
         if (justSpawned)
         {
             justSpawned = false;
@@ -56,13 +79,12 @@ public class Grabbable : NetworkBehaviour
         }
         else if (transform.parent == null) //This section occurs when a player releases the grabbable
         {
-            HandleGrabbableReleased();
+            OnShowNetworkGrabbable();
             return;
         }
 
         if (parentNetworkObject == null) return;
         if (parentNetworkObject.GetComponent<PlayerNetwork>() == null) return;
-
 
         HandleGrabbableGrabbed(parentNetworkObject);
     }
@@ -74,19 +96,8 @@ public class Grabbable : NetworkBehaviour
         isParented = true;
         if (!IsServer) RequestChangeOwnershipRpc(parentNetworkObject.OwnerClientId);
         else ChangeGrabbableOwnership(parentNetworkObject.OwnerClientId);
-    }
 
-    private void HandleGrabbableReleased()
-    {
-        rb.isKinematic = false;
-        triggerCollider.enabled = true;
-        isParented = false;
-
-        // Giving the grabbable back to the server.
-        if (!IsServer) RequestChangeOwnershipRpc(NetworkManager.ServerClientId);
-        else ChangeGrabbableOwnership(NetworkManager.ServerClientId);
-
-        body.enabled = true;
+        transform.localPosition = transform.parent.GetComponent<PlayerNetwork>().Hand.localPosition;
     }
 
     [Rpc(SendTo.Server)]
@@ -102,19 +113,7 @@ public class Grabbable : NetworkBehaviour
         networkObject.ChangeOwnership(newClientId);
     }
 
-    protected async override void OnOwnershipChanged(ulong previous, ulong current)
-    {
-        base.OnOwnershipChanged(previous, current);
-
-        if(!IsServer) await HandleAsyncOperation();
-
-        if (transform.parent == null) return;
-        if (!IsOwner) return;
-
-        transform.localPosition = transform.parent.GetComponent<PlayerNetwork>().Hand.localPosition;
-    }
-
-    protected async Task HandleAsyncOperation() //NetworkObject parentNetworkObject
+    protected async Task HandleAsyncOperation()
     {
         var result = await Task.Run(() => 
         {
