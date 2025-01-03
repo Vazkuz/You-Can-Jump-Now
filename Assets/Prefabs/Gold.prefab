@@ -175,6 +175,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   triggerCollider: {fileID: 6921126029498120709}
   body: {fileID: 8648584763390485112}
+  grabbedObject: {fileID: 11400000, guid: d168bca9c2d96aa43ba143826d795fc7, type: 2}
 --- !u!1 &8598275672860580630
 GameObject:
   m_ObjectHideFlags: 0
@@ -248,7 +249,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 3
   m_Sprite: {fileID: 21300000, guid: 148deff5c7776c54bba3a1db17fe78e4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

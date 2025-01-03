@@ -44,11 +44,16 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private LayerMask pickaxeLayer;
     public NetworkVariable<bool> hasPickaxe { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
 
-    private Grabbable grabbable;
-
     [Header("Gold Variables")]
     [SerializeField] private LayerMask goldLayer;
     public NetworkVariable<bool> hasGold { get; private set; } = new NetworkVariable<bool>(false, default, NetworkVariableWritePermission.Owner);
+
+    [Header("Grabbed variables")]
+    private Grabbable grabbable;
+    [SerializeField] private GrabbedObject pickaxeSO;
+    [SerializeField] private GrabbedObject goldSO;
+    public static event Action<ulong> OnShowLocalGrabbable;
+    public static event Action OnHideLocalGrabbable;
 
     [Header("Mineral Variables")]
     [SerializeField] private LayerMask breakableLayer;
@@ -275,15 +280,6 @@ public class PlayerNetwork : NetworkBehaviour
 
         canJump.Value = false;
 
-        if (!IsServer)
-        {
-            RequestGrabPickaxeRpc();
-        }
-        else
-        {
-            GrabPickaxeOnServer();
-        }
-
         inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         inputActions.PlayerControls.grabObject.performed += OnReleaseObject;
         if(grabbable == FindObjectOfType<Pickaxe>())
@@ -295,26 +291,44 @@ public class PlayerNetwork : NetworkBehaviour
         {
             hasGold.Value = true;
         }
+
+        if (!IsServer)
+        {
+            ShowGrabbableSpriteRpc(hasPickaxe.Value);
+        }
+        else
+        {
+            GrabObjectOnServer();
+        }
     }
 
-    [Rpc(SendTo.Server)]
-    private void RequestGrabPickaxeRpc()
-    {
-        GrabPickaxeOnServer();
-    }
-
-    private void GrabPickaxeOnServer()
+    private void GrabObjectOnServer()
     {
         grabbable.GetComponent<NetworkObject>().TrySetParent(transform);
     }
 
+    [Rpc(SendTo.Everyone)]
+    private void ShowGrabbableSpriteRpc(bool hasPickaxe)
+    {
+        OnShowLocalGrabbable?.Invoke(OwnerClientId);
+        if (hasPickaxe)
+        {
+            hand.GetComponent<SpriteRenderer>().sprite = pickaxeSO.objectImage;
+        }
+        else
+        {
+            hand.GetComponent<SpriteRenderer>().sprite = goldSO.objectImage;
+        }
+
+        grabbable.body.enabled = false;
+    }
+
     /// <summary>
-    /// Method to release the pickaxe. Subscribed when the player has grabbed the pickaxe.
+    /// Method to release object (pickaxe or gold). Subscribed when the player has grabbed an object (gold or pickaxe).
     /// </summary>
     /// <param name="context"></param>
     private void OnReleaseObject(InputAction.CallbackContext context)
     {
-
         if (!IsOwner && !isDebugScene) return;
         HandleReleaseObject();
 
@@ -330,30 +344,35 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (!IsServer)
         {
-            RequestReleaseObjectRpc();
+            RequestReleaseObjectRpc(hand.transform.position);
         }
         else
         {
-            ReleaseObjectOnServer();
+            ReleaseObjectOnServerRpc();
         }
 
         inputActions.PlayerControls.grabObject.performed -= OnReleaseObject;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
     }
 
-    [Rpc(SendTo.Server)]
-    private void RequestReleaseObjectRpc()
+    [Rpc(SendTo.Everyone)]
+    private void RequestReleaseObjectRpc(Vector3 handPos)
     {
-        ReleaseObjectOnServer();
+        grabbable.transform.position = handPos;
+        OnHideLocalGrabbable?.Invoke();
+        //ReleaseObjectOnServer();
+        hand.GetComponent<SpriteRenderer>().sprite = null;
     }
 
     /// <summary>
     /// OJO CON ESTA FUNCION: Actualmente intenta remover el padre del objecto grabbable, sin importar si el jugador que llama la funcion es o no su padre.
     /// Podria ser necesario hacer una verificacion de esto antes de hacer TryRemoveParent. Por ahora no es necesario, pero revisitar esto.
     /// </summary>
-    private void ReleaseObjectOnServer()
+    [Rpc(SendTo.Everyone)]
+    private void ReleaseObjectOnServerRpc()
     {
         grabbable.GetComponent<NetworkObject>().TryRemoveParent();
+        hand.GetComponent<SpriteRenderer>().sprite = null;
     }
 
     /// <summary>
@@ -424,7 +443,6 @@ public class PlayerNetwork : NetworkBehaviour
     private void HideRpc()
     {
         characterBody.SetActive(false);
-        if (hasGold.Value || hasPickaxe.Value) grabbable.body.enabled = false;
         DisableMovement();
     }
 
