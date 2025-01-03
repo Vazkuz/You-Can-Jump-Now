@@ -295,6 +295,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (!IsServer)
         {
             ShowGrabbableSpriteRpc(hasPickaxe.Value);
+            OnShowLocalGrabbable?.Invoke(OwnerClientId);
         }
         else
         {
@@ -305,12 +306,12 @@ public class PlayerNetwork : NetworkBehaviour
     private void GrabObjectOnServer()
     {
         grabbable.GetComponent<NetworkObject>().TrySetParent(transform);
+        ShowGrabbableSpriteRpc(hasPickaxe.Value);
     }
 
     [Rpc(SendTo.Everyone)]
     private void ShowGrabbableSpriteRpc(bool hasPickaxe)
     {
-        OnShowLocalGrabbable?.Invoke(OwnerClientId);
         if (hasPickaxe)
         {
             hand.GetComponent<SpriteRenderer>().sprite = pickaxeSO.objectImage;
