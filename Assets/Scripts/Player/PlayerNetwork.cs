@@ -444,6 +444,7 @@ public class PlayerNetwork : NetworkBehaviour
     private void HideRpc()
     {
         characterBody.SetActive(false);
+        hand.GetComponent<SpriteRenderer>().enabled = false;
         DisableMovement();
     }
 
@@ -457,7 +458,7 @@ public class PlayerNetwork : NetworkBehaviour
     {
         transform.position = newPos;
         characterBody.SetActive(true);
-        if (hasGold.Value || hasPickaxe.Value) grabbable.body.enabled = true;
+        hand.GetComponent<SpriteRenderer>().enabled = true;
         EnableMovement();
     }
 
