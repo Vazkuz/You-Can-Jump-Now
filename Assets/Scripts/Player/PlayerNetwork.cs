@@ -52,8 +52,8 @@ public class PlayerNetwork : NetworkBehaviour
     private Grabbable grabbable;
     [SerializeField] private GrabbedObject pickaxeSO;
     [SerializeField] private GrabbedObject goldSO;
-    public static event Action<ulong> OnShowLocalGrabbable;
-    public static event Action OnHideLocalGrabbable;
+    public static event Action<ulong, string> OnShowLocalGrabbable;
+    public static event Action<string> OnHideLocalGrabbable;
 
     [Header("Mineral Variables")]
     [SerializeField] private LayerMask breakableLayer;
@@ -295,7 +295,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (!IsServer)
         {
             ShowGrabbableSpriteRpc(hasPickaxe.Value);
-            OnShowLocalGrabbable?.Invoke(OwnerClientId);
+            OnShowLocalGrabbable?.Invoke(OwnerClientId, grabbable.name);
         }
         else
         {
@@ -360,7 +360,7 @@ public class PlayerNetwork : NetworkBehaviour
     private void RequestReleaseObjectRpc(Vector3 handPos)
     {
         grabbable.transform.position = handPos;
-        OnHideLocalGrabbable?.Invoke();
+        OnHideLocalGrabbable?.Invoke(grabbable.name);
         //ReleaseObjectOnServer();
         hand.GetComponent<SpriteRenderer>().sprite = null;
     }
