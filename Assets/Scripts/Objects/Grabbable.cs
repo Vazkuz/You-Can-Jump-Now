@@ -47,8 +47,11 @@ public class Grabbable : NetworkBehaviour
         tokenSource = new CancellationTokenSource();
     }
 
-    private void OnHideNetworkGrabbable(ulong newOwnerId)
+    private void OnHideNetworkGrabbable(ulong newOwnerId, string name)
     {
+        if (this.name != name) return;
+
+        print($"Escondiendo {name}");
         rb.isKinematic = true;
         triggerCollider.enabled = false;
         isParented = true;
@@ -56,8 +59,10 @@ public class Grabbable : NetworkBehaviour
         else ChangeGrabbableOwnership(newOwnerId);
     }
 
-    private void OnShowNetworkGrabbable()
+    private void OnShowNetworkGrabbable(string name)
     {
+        if (this.name != name) return;
+
         rb.isKinematic = false;
         triggerCollider.enabled = true;
         isParented = false;
@@ -79,7 +84,7 @@ public class Grabbable : NetworkBehaviour
         }
         else if (transform.parent == null) //This section occurs when a player releases the grabbable
         {
-            OnShowNetworkGrabbable();
+            OnShowNetworkGrabbable(name);
             return;
         }
 

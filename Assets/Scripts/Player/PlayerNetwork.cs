@@ -52,8 +52,8 @@ public class PlayerNetwork : NetworkBehaviour
     private Grabbable grabbable;
     [SerializeField] private GrabbedObject pickaxeSO;
     [SerializeField] private GrabbedObject goldSO;
-    public static event Action<ulong> OnShowLocalGrabbable;
-    public static event Action OnHideLocalGrabbable;
+    public static event Action<ulong, string> OnShowLocalGrabbable;
+    public static event Action<string> OnHideLocalGrabbable;
 
     [Header("Mineral Variables")]
     [SerializeField] private LayerMask breakableLayer;
@@ -295,6 +295,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (!IsServer)
         {
             ShowGrabbableSpriteRpc(hasPickaxe.Value);
+            OnShowLocalGrabbable?.Invoke(OwnerClientId, grabbable.name);
         }
         else
         {
@@ -305,12 +306,12 @@ public class PlayerNetwork : NetworkBehaviour
     private void GrabObjectOnServer()
     {
         grabbable.GetComponent<NetworkObject>().TrySetParent(transform);
+        ShowGrabbableSpriteRpc(hasPickaxe.Value);
     }
 
     [Rpc(SendTo.Everyone)]
     private void ShowGrabbableSpriteRpc(bool hasPickaxe)
     {
-        OnShowLocalGrabbable?.Invoke(OwnerClientId);
         if (hasPickaxe)
         {
             hand.GetComponent<SpriteRenderer>().sprite = pickaxeSO.objectImage;
@@ -359,7 +360,7 @@ public class PlayerNetwork : NetworkBehaviour
     private void RequestReleaseObjectRpc(Vector3 handPos)
     {
         grabbable.transform.position = handPos;
-        OnHideLocalGrabbable?.Invoke();
+        OnHideLocalGrabbable?.Invoke(grabbable.name);
         //ReleaseObjectOnServer();
         hand.GetComponent<SpriteRenderer>().sprite = null;
     }
@@ -443,6 +444,7 @@ public class PlayerNetwork : NetworkBehaviour
     private void HideRpc()
     {
         characterBody.SetActive(false);
+        hand.GetComponent<SpriteRenderer>().enabled = false;
         DisableMovement();
     }
 
@@ -456,7 +458,7 @@ public class PlayerNetwork : NetworkBehaviour
     {
         transform.position = newPos;
         characterBody.SetActive(true);
-        if (hasGold.Value || hasPickaxe.Value) grabbable.body.enabled = true;
+        hand.GetComponent<SpriteRenderer>().enabled = true;
         EnableMovement();
     }
 
