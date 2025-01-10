@@ -9,17 +9,31 @@ public class PressurePlate : NetworkBehaviour
     [SerializeField] private Transform pressedPos;
     [SerializeField] private float minimumWeight;
 
+    private float currentWeight;
+
     private NetworkVariable<bool> isPressed = new NetworkVariable<bool>(false);
 
     protected void Start()
     {
         transform.position = unpressedPos.position;
+        currentWeight = 0;
     }
 
     protected void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.GetComponent<PlateInteractable>() == null) return;
+        if (!collision.enabled) return;
 
         print("Alguien pisa la placa");
+        currentWeight += collision.gameObject.GetComponent<PlateInteractable>().weight;
+    }
+
+    protected void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.GetComponent<PlateInteractable>() == null) return;
+        if (!collision.enabled) return;
+
+        print("Alguien dejo la placa");
+        currentWeight -= collision.gameObject.GetComponent<PlateInteractable>().weight;
     }
 }
