@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6787596238034401988}
   - component: {fileID: 6921126029498120709}
   - component: {fileID: 907532540085168132}
+  - component: {fileID: -1240606697905904865}
   m_Layer: 11
   m_Name: Gold
   m_TagString: Untagged
@@ -49,7 +50,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3294187215
+  GlobalObjectIdHash: 2761350410
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -176,6 +177,19 @@ MonoBehaviour:
   triggerCollider: {fileID: 6921126029498120709}
   body: {fileID: 8648584763390485112}
   grabbedObject: {fileID: 11400000, guid: d168bca9c2d96aa43ba143826d795fc7, type: 2}
+--- !u!114 &-1240606697905904865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7145839025187533211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e8c196e2b0058d42a3efdd536d96316, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _weight: 1.5
 --- !u!1 &8598275672860580630
 GameObject:
   m_ObjectHideFlags: 0
