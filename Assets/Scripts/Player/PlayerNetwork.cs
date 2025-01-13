@@ -310,7 +310,13 @@ public class PlayerNetwork : NetworkBehaviour
         if (grabbable.GetComponent<PlateInteractable>() == null) return;
 
         plateInteractable.AddWeight(grabbable.GetComponent<PlateInteractable>().weight.Value);
-        OnWeightAdded?.Invoke(grabbable.GetComponent<PlateInteractable>().weight.Value);
+        AddWeightRpc(grabbable.GetComponent<PlateInteractable>().weight.Value);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void AddWeightRpc(float addedWeight)
+    {
+        OnWeightAdded?.Invoke(addedWeight);
     }
 
     private void GrabObjectOnServer()
@@ -345,7 +351,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (grabbable.GetComponent<PlateInteractable>() != null)
         {
             plateInteractable.AddWeight(-grabbable.GetComponent<PlateInteractable>().weight.Value);
-            OnWeightAdded?.Invoke(-grabbable.GetComponent<PlateInteractable>().weight.Value);
+            AddWeightRpc(-grabbable.GetComponent<PlateInteractable>().weight.Value);
         }
 
         if (!IsServer)

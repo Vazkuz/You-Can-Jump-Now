@@ -28,7 +28,7 @@ public class PressurePlate : NetworkBehaviour
         currentWeight += collision.gameObject.GetComponent<PlateInteractable>().weight.Value;
 
         if(collision.gameObject.GetComponent<PlayerNetwork>() == null) return;
-        PlayerNetwork.OnWeightAdded += OnWeightAdded;
+        PlayerNetwork.OnWeightAdded += OnWeightAddedRpc;
     }
 
     protected void OnCollisionExit2D(Collision2D collision)
@@ -39,16 +39,17 @@ public class PressurePlate : NetworkBehaviour
         currentWeight -= collision.gameObject.GetComponent<PlateInteractable>().weight.Value;
 
         if (collision.gameObject.GetComponent<PlayerNetwork>() == null) return;
-        PlayerNetwork.OnWeightAdded -= OnWeightAdded;
+        PlayerNetwork.OnWeightAdded -= OnWeightAddedRpc;
     }
 
-    private void OnWeightAdded(float releasedWeight)
+    private void OnWeightAddedRpc(float releasedWeight)
     {
+        print("entro aqui");
         currentWeight += releasedWeight;
     }
 
     protected void OnDisable()
     {
-        PlayerNetwork.OnWeightAdded -= OnWeightAdded;
+        PlayerNetwork.OnWeightAdded -= OnWeightAddedRpc;
     }
 }
