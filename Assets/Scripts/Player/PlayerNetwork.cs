@@ -339,14 +339,6 @@ public class PlayerNetwork : NetworkBehaviour
     private void OnReleaseObject(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
-        HandleReleaseObject();
-    }
-
-    /// <summary>
-    ///  OJO CON ESTA FUNCION: Actualmente ejectua para todos, ya que usa ReleasePickaxeOnServer. Chequear esta funcion para mas detalles.
-    /// </summary>
-    private void HandleReleaseObject()
-    {
 
         if (grabbable.GetComponent<PlateInteractable>() != null)
         {
