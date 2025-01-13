@@ -24,8 +24,7 @@ public class PressurePlate : NetworkBehaviour
         if (collision.gameObject.GetComponent<PlateInteractable>() == null) return;
         if (!collision.enabled) return;
 
-        print("Alguien pisa la placa");
-        currentWeight += collision.gameObject.GetComponent<PlateInteractable>().weight;
+        currentWeight += collision.gameObject.GetComponent<PlateInteractable>().weight.Value;
     }
 
     protected void OnCollisionExit2D(Collision2D collision)
@@ -33,7 +32,6 @@ public class PressurePlate : NetworkBehaviour
         if (collision.gameObject.GetComponent<PlateInteractable>() == null) return;
         if (!collision.enabled) return;
 
-        print("Alguien dejo la placa");
-        currentWeight -= collision.gameObject.GetComponent<PlateInteractable>().weight;
+        currentWeight -= collision.gameObject.GetComponent<PlateInteractable>().weight.Value;
     }
 }
