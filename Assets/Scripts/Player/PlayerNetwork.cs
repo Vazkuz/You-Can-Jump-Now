@@ -68,6 +68,9 @@ public class PlayerNetwork : NetworkBehaviour
     [Header("Lobby Vars")]
     [SerializeField] SpriteRenderer hostSign;
 
+    //Pressure plates zone
+    PlateInteractable plateInteractable;
+
 
     public static event Action<ulong> OnPlayerPrefabSpawn;
 
@@ -86,6 +89,7 @@ public class PlayerNetwork : NetworkBehaviour
         _isFlying = !IsGrounded();
         mayJumpTime = 0f;
         moveSpeed = moveSpeedGround;
+        plateInteractable = GetComponent<PlateInteractable>();
         //if(!IsServer) hostSign.enabled = false; // MAS ADELANTE AÑADIR ESTO, JUNTO CON UN LOBBY MANAGER.
     }
     public override void OnNetworkSpawn()
@@ -301,6 +305,10 @@ public class PlayerNetwork : NetworkBehaviour
         {
             GrabObjectOnServer();
         }
+
+        if (grabbable.GetComponent<PlateInteractable>() == null) return;
+
+        plateInteractable.AddWeight(grabbable.GetComponent<PlateInteractable>().weight.Value);
     }
 
     private void GrabObjectOnServer()
@@ -332,10 +340,6 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (!IsOwner && !isDebugScene) return;
         HandleReleaseObject();
-
-        if(hasPickaxe.Value) hasPickaxe.Value = false;
-        if (hasGold.Value) hasGold.Value = false;
-        canJump.Value = true;
     }
 
     /// <summary>
@@ -343,6 +347,12 @@ public class PlayerNetwork : NetworkBehaviour
     /// </summary>
     private void HandleReleaseObject()
     {
+
+        if (grabbable.GetComponent<PlateInteractable>() != null)
+        {
+            plateInteractable.AddWeight(-grabbable.GetComponent<PlateInteractable>().weight.Value);
+        }
+
         if (!IsServer)
         {
             RequestReleaseObjectRpc(hand.transform.position);
@@ -354,6 +364,10 @@ public class PlayerNetwork : NetworkBehaviour
 
         inputActions.PlayerControls.grabObject.performed -= OnReleaseObject;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
+
+        if (hasPickaxe.Value) hasPickaxe.Value = false;
+        if (hasGold.Value) hasGold.Value = false;
+        canJump.Value = true;
     }
 
     [Rpc(SendTo.Everyone)]
