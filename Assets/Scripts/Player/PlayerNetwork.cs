@@ -52,6 +52,7 @@ public class PlayerNetwork : NetworkBehaviour
     private Grabbable grabbable;
     [SerializeField] private GrabbedObject pickaxeSO;
     [SerializeField] private GrabbedObject goldSO;
+    public static event Action<float> OnWeightAdded;
     public static event Action<ulong, string> OnShowLocalGrabbable;
     public static event Action<string> OnHideLocalGrabbable;
 
@@ -309,6 +310,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (grabbable.GetComponent<PlateInteractable>() == null) return;
 
         plateInteractable.AddWeight(grabbable.GetComponent<PlateInteractable>().weight.Value);
+        OnWeightAdded?.Invoke(grabbable.GetComponent<PlateInteractable>().weight.Value);
     }
 
     private void GrabObjectOnServer()
@@ -343,6 +345,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (grabbable.GetComponent<PlateInteractable>() != null)
         {
             plateInteractable.AddWeight(-grabbable.GetComponent<PlateInteractable>().weight.Value);
+            OnWeightAdded?.Invoke(-grabbable.GetComponent<PlateInteractable>().weight.Value);
         }
 
         if (!IsServer)

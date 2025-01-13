@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -25,6 +26,9 @@ public class PressurePlate : NetworkBehaviour
         if (!collision.enabled) return;
 
         currentWeight += collision.gameObject.GetComponent<PlateInteractable>().weight.Value;
+
+        if(collision.gameObject.GetComponent<PlayerNetwork>() == null) return;
+        PlayerNetwork.OnWeightAdded += OnWeightAdded;
     }
 
     protected void OnCollisionExit2D(Collision2D collision)
@@ -33,5 +37,18 @@ public class PressurePlate : NetworkBehaviour
         if (!collision.enabled) return;
 
         currentWeight -= collision.gameObject.GetComponent<PlateInteractable>().weight.Value;
+
+        if (collision.gameObject.GetComponent<PlayerNetwork>() == null) return;
+        PlayerNetwork.OnWeightAdded -= OnWeightAdded;
+    }
+
+    private void OnWeightAdded(float releasedWeight)
+    {
+        currentWeight += releasedWeight;
+    }
+
+    protected void OnDisable()
+    {
+        PlayerNetwork.OnWeightAdded -= OnWeightAdded;
     }
 }
