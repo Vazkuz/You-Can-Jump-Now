@@ -50,11 +50,8 @@ public class Grabbable : NetworkBehaviour
     private void OnHideNetworkGrabbable(ulong newOwnerId, string name)
     {
         if (this.name != name) return;
+        HandleGrabbablePhysicsRpc(true);
 
-        print($"Escondiendo {name}");
-        rb.isKinematic = true;
-        triggerCollider.enabled = false;
-        isParented = true;
         if (!IsServer) RequestChangeOwnershipRpc(newOwnerId);
         else ChangeGrabbableOwnership(newOwnerId);
     }
@@ -63,15 +60,21 @@ public class Grabbable : NetworkBehaviour
     {
         if (this.name != name) return;
 
-        rb.isKinematic = false;
-        triggerCollider.enabled = true;
-        isParented = false;
+        HandleGrabbablePhysicsRpc(false);
 
         // Giving the grabbable back to the server.
         if (!IsServer) RequestChangeOwnershipRpc(NetworkManager.ServerClientId);
         else ChangeGrabbableOwnership(NetworkManager.ServerClientId);
 
         body.enabled = true;
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void HandleGrabbablePhysicsRpc(bool isHidden)
+    {
+        rb.isKinematic = isHidden;
+        triggerCollider.enabled = !isHidden;
+        isParented = isHidden;
     }
 
     //This section will occur only when the host grabs a grabbable
@@ -135,5 +138,12 @@ public class Grabbable : NetworkBehaviour
     protected void OnDisable()
     {
         tokenSource.Cancel();
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        PlayerNetwork.OnShowLocalGrabbable -= OnHideNetworkGrabbable;
+        PlayerNetwork.OnHideLocalGrabbable -= OnShowNetworkGrabbable;
     }
 }

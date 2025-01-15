@@ -52,6 +52,7 @@ public class PlayerNetwork : NetworkBehaviour
     private Grabbable grabbable;
     [SerializeField] private GrabbedObject pickaxeSO;
     [SerializeField] private GrabbedObject goldSO;
+    public static event Action<float> OnWeightAdded;
     public static event Action<ulong, string> OnShowLocalGrabbable;
     public static event Action<string> OnHideLocalGrabbable;
 
@@ -67,6 +68,9 @@ public class PlayerNetwork : NetworkBehaviour
 
     [Header("Lobby Vars")]
     [SerializeField] SpriteRenderer hostSign;
+
+    //Pressure plates zone
+    PlateInteractable plateInteractable;
 
 
     public static event Action<ulong> OnPlayerPrefabSpawn;
@@ -86,6 +90,7 @@ public class PlayerNetwork : NetworkBehaviour
         _isFlying = !IsGrounded();
         mayJumpTime = 0f;
         moveSpeed = moveSpeedGround;
+        plateInteractable = GetComponent<PlateInteractable>();
         //if(!IsServer) hostSign.enabled = false; // MAS ADELANTE AÑADIR ESTO, JUNTO CON UN LOBBY MANAGER.
     }
     public override void OnNetworkSpawn()
@@ -301,6 +306,17 @@ public class PlayerNetwork : NetworkBehaviour
         {
             GrabObjectOnServer();
         }
+
+        if (grabbable.GetComponent<PlateInteractable>() == null) return;
+
+        plateInteractable.AddWeight(grabbable.GetComponent<PlateInteractable>().weight.Value);
+        AddWeightRpc(grabbable.GetComponent<PlateInteractable>().weight.Value);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void AddWeightRpc(float addedWeight)
+    {
+        OnWeightAdded?.Invoke(addedWeight);
     }
 
     private void GrabObjectOnServer()
@@ -331,18 +347,13 @@ public class PlayerNetwork : NetworkBehaviour
     private void OnReleaseObject(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
-        HandleReleaseObject();
 
-        if(hasPickaxe.Value) hasPickaxe.Value = false;
-        if (hasGold.Value) hasGold.Value = false;
-        canJump.Value = true;
-    }
+        if (grabbable.GetComponent<PlateInteractable>() != null)
+        {
+            plateInteractable.AddWeight(-grabbable.GetComponent<PlateInteractable>().weight.Value);
+            AddWeightRpc(-grabbable.GetComponent<PlateInteractable>().weight.Value);
+        }
 
-    /// <summary>
-    ///  OJO CON ESTA FUNCION: Actualmente ejectua para todos, ya que usa ReleasePickaxeOnServer. Chequear esta funcion para mas detalles.
-    /// </summary>
-    private void HandleReleaseObject()
-    {
         if (!IsServer)
         {
             RequestReleaseObjectRpc(hand.transform.position);
@@ -354,6 +365,10 @@ public class PlayerNetwork : NetworkBehaviour
 
         inputActions.PlayerControls.grabObject.performed -= OnReleaseObject;
         inputActions.PlayerControls.mine.performed -= OnTryingToMine;
+
+        if (hasPickaxe.Value) hasPickaxe.Value = false;
+        if (hasGold.Value) hasGold.Value = false;
+        canJump.Value = true;
     }
 
     [Rpc(SendTo.Everyone)]
