@@ -25,10 +25,10 @@ public class PressurePlate : NetworkBehaviour
         if (collision.gameObject.GetComponent<PlateInteractable>() == null) return;
         if (!collision.enabled) return;
 
-        currentWeight += collision.gameObject.GetComponent<PlateInteractable>().weight.Value;
+        OnWeightAdded(collision.gameObject.GetComponent<PlateInteractable>().weight.Value);
 
-        if(collision.gameObject.GetComponent<PlayerNetwork>() == null) return;
-        PlayerNetwork.OnWeightAdded += OnWeightAddedRpc;
+        if (collision.gameObject.GetComponent<PlayerNetwork>() == null) return;
+        PlayerNetwork.OnWeightAdded += OnWeightAdded;
     }
 
     protected void OnCollisionExit2D(Collision2D collision)
@@ -36,19 +36,30 @@ public class PressurePlate : NetworkBehaviour
         if (collision.gameObject.GetComponent<PlateInteractable>() == null) return;
         if (!collision.enabled) return;
 
-        currentWeight -= collision.gameObject.GetComponent<PlateInteractable>().weight.Value;
+        OnWeightAdded(-collision.gameObject.GetComponent<PlateInteractable>().weight.Value);
 
         if (collision.gameObject.GetComponent<PlayerNetwork>() == null) return;
-        PlayerNetwork.OnWeightAdded -= OnWeightAddedRpc;
+        PlayerNetwork.OnWeightAdded -= OnWeightAdded;
     }
 
-    private void OnWeightAddedRpc(float releasedWeight)
+    private void OnWeightAdded(float releasedWeight)
     {
         currentWeight += releasedWeight;
+
+        if (!IsServer) return;
+
+        if(currentWeight >= minimumWeight)
+        {
+            isPressed.Value = true;
+        }
+        else
+        {
+            isPressed.Value = false;
+        }
     }
 
     protected void OnDisable()
     {
-        PlayerNetwork.OnWeightAdded -= OnWeightAddedRpc;
+        PlayerNetwork.OnWeightAdded -= OnWeightAdded;
     }
 }
