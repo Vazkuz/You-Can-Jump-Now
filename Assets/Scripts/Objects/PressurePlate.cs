@@ -9,6 +9,7 @@ public class PressurePlate : NetworkBehaviour
     [SerializeField] private Transform unpressedPos;
     [SerializeField] private Transform pressedPos;
     [SerializeField] private float minimumWeight;
+    [SerializeField] private TriggerTarget target;
 
     private float currentWeight;
 
@@ -51,10 +52,17 @@ public class PressurePlate : NetworkBehaviour
         if(currentWeight >= minimumWeight)
         {
             isPressed.Value = true;
+            target.Activate();
         }
         else
         {
+            if (!isPressed.Value) return;
+
             isPressed.Value = false;
+
+            if (!target.isActive.Value) return; //no need to deactivate what it was not active
+
+            target.Deactivate();
         }
     }
 

@@ -1,18 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class TriggerTarget : MonoBehaviour
+public class TriggerTarget : NetworkBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public NetworkVariable<bool> isActive { get; private set; } = new NetworkVariable<bool>(false);
+    public void Activate()
     {
-        
+        isActive.Value = true;
+        print($"Target {name} activated.");
     }
-
-    // Update is called once per frame
-    void Update()
+    public void Deactivate()
     {
-        
+        isActive.Value = false;
+        print($"Target {name} deactivated.");
     }
 }
