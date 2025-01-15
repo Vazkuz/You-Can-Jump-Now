@@ -44,7 +44,6 @@ public class PressurePlate : NetworkBehaviour
 
     private void OnWeightAddedRpc(float releasedWeight)
     {
-        print("entro aqui");
         currentWeight += releasedWeight;
     }
 
