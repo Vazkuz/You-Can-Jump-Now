@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class MovablePlatform : TriggerTarget
@@ -32,3 +33,23 @@ public class MovablePlatform : TriggerTarget
         }
     }
 
+    protected void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!IsServer) return;
+
+        if (other.CompareTag("Player"))
+        {
+            other.GetComponent<NetworkObject>().TrySetParent(transform);
+        }
+    }
+
+    protected void OnTriggerExit2D(Collider2D other)
+    {
+        if (!IsServer) return;
+
+        if (other.CompareTag("Player"))
+        {
+            other.GetComponent<NetworkObject>().TryRemoveParent();
+        }
+    }
+}
