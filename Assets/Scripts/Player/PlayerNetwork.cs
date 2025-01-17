@@ -162,6 +162,14 @@ public class PlayerNetwork : NetworkBehaviour
 
     protected void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.CompareTag("MovablePlatform"))
+        {
+            if (IsLocalPlayer)
+            {
+                transform.parent = collision.transform;
+            }
+        }
+
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = true;
@@ -191,6 +199,14 @@ public class PlayerNetwork : NetworkBehaviour
 
     protected void OnTriggerExit2D(Collider2D collision)
     {
+        if (collision.CompareTag("MovablePlatform"))
+        {
+            if (IsLocalPlayer)
+            {
+                transform.parent = null;
+            }
+        }
+
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = false;
@@ -212,6 +228,12 @@ public class PlayerNetwork : NetworkBehaviour
         {
             inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
         }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void ReparentingRpc()
+    {
+
     }
     private void HandleNetworkMovement()
     {
