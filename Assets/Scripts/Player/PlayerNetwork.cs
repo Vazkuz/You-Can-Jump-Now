@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.GraphicsBuffer;
 
 public class PlayerNetwork : NetworkBehaviour
 {
@@ -167,6 +168,7 @@ public class PlayerNetwork : NetworkBehaviour
             if (IsLocalPlayer)
             {
                 transform.parent = collision.transform;
+                ReparentingRpc(FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>()));
             }
         }
 
@@ -204,6 +206,7 @@ public class PlayerNetwork : NetworkBehaviour
             if (IsLocalPlayer)
             {
                 transform.parent = null;
+                ReparentingRpc(-1);
             }
         }
 
@@ -230,10 +233,17 @@ public class PlayerNetwork : NetworkBehaviour
         }
     }
 
-    [Rpc(SendTo.Everyone)]
-    private void ReparentingRpc()
+    [Rpc(SendTo.NotOwner)]
+    private void ReparentingRpc(int newParent)
     {
-
+        if(newParent < 0)
+        {
+            transform.parent = null;
+        }
+        else
+        {
+            transform.parent = FindObjectOfType<LevelManager>().targets[newParent].transform;
+        }
     }
     private void HandleNetworkMovement()
     {
