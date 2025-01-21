@@ -23,6 +23,8 @@ public class LevelManager : NetworkBehaviour
     private Transform goldObjectTransform; // Just to check if there's already a pickaxe in the scene.
     //private NetworkVariable<bool> isThereGold = new NetworkVariable<bool>(false);
 
+    public List<TriggerTarget> targets;
+
     public static event Action OnStageFinish;
     //private bool justConnecting = true;
     // Start is called before OnNetworkSpawn (on-scene object)

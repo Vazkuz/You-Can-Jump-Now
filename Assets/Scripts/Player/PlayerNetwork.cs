@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.GraphicsBuffer;
 
 public class PlayerNetwork : NetworkBehaviour
 {
@@ -162,6 +163,15 @@ public class PlayerNetwork : NetworkBehaviour
 
     protected void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.CompareTag("MovablePlatform"))
+        {
+            if (IsLocalPlayer)
+            {
+                transform.parent = collision.transform;
+                ReparentingRpc(FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>()));
+            }
+        }
+
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = true;
@@ -191,6 +201,15 @@ public class PlayerNetwork : NetworkBehaviour
 
     protected void OnTriggerExit2D(Collider2D collision)
     {
+        if (collision.CompareTag("MovablePlatform"))
+        {
+            if (IsLocalPlayer)
+            {
+                transform.parent = null;
+                ReparentingRpc(-1);
+            }
+        }
+
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = false;
@@ -211,6 +230,19 @@ public class PlayerNetwork : NetworkBehaviour
         else if (collision.gameObject.layer == Mathf.Log(goldLayer, 2))
         {
             inputActions.PlayerControls.grabObject.performed -= OnGrabObject;
+        }
+    }
+
+    [Rpc(SendTo.NotOwner)]
+    private void ReparentingRpc(int newParent)
+    {
+        if(newParent < 0)
+        {
+            transform.parent = null;
+        }
+        else
+        {
+            transform.parent = FindObjectOfType<LevelManager>().targets[newParent].transform;
         }
     }
     private void HandleNetworkMovement()
