@@ -2071,7 +2071,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 3
   m_Sprite: {fileID: 21300000, guid: ad2b3901194a56b46aa9d1dfbfddc8b0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -2330,7 +2330,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 3
   m_Sprite: {fileID: 21300000, guid: 760fa3ae288e86f4aa17665837a9cc55, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -2419,7 +2419,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: b200dae68c0546643825f66b2cc60c88, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -3290,6 +3290,8 @@ MonoBehaviour:
   mainCamera: {fileID: 77682060}
   pickaxePrefab: {fileID: 5080277437636149844, guid: bdce0fbd6cbe8fb4796630b0427aca51, type: 3}
   goldPrefab: {fileID: 371269110849871737, guid: d18474d65114a5748b5e3b7e8a1619cd, type: 3}
+  targets:
+  - {fileID: 1893348336}
 --- !u!114 &1863206708
 MonoBehaviour:
   m_ObjectHideFlags: 0
