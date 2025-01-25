@@ -141,7 +141,18 @@ public class LevelManager : NetworkBehaviour
             Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
             if (newLevel)
             {
-                player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
+                if (player.GetComponent<PlayerNetwork>().hasGold.Value)
+                {
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[0].position);
+                }
+                else if (player.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+                {
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[1].position);
+                }
+                else
+                {
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
+                }
                 playersSetUp.Value++;
             }
             else

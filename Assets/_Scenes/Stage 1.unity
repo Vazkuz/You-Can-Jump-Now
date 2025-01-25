@@ -1082,7 +1082,7 @@ GameObject:
   m_Component:
   - component: {fileID: 697628455}
   m_Layer: 0
-  m_Name: Player2Pos
+  m_Name: PickaxePlayerPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2631,7 +2631,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1340403089}
   m_Layer: 0
-  m_Name: Player2Pos
+  m_Name: PickaxePlayerPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2662,7 +2662,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1447507573}
   m_Layer: 0
-  m_Name: Player1Pos
+  m_Name: GoldPlayerPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2821,7 +2821,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1579958162}
   m_Layer: 0
-  m_Name: Player1Pos
+  m_Name: GoldPlayerPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3585,7 +3585,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1963955566}
   m_Layer: 0
-  m_Name: Player1Pos
+  m_Name: GoldPlayerPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
