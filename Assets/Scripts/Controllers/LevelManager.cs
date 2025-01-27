@@ -10,7 +10,7 @@ using UnityEngine;
 
 public class LevelManager : NetworkBehaviour
 {
-    private NetworkVariable<int> nLevel =  new NetworkVariable<int>(0);
+    private NetworkVariable<int> nLevel = new NetworkVariable<int>(0);
     private NetworkVariable<int> playersSetUp = new NetworkVariable<int>(0);
     [SerializeField] private List<Level> levelList;
     private Door currentDoor;
@@ -52,7 +52,7 @@ public class LevelManager : NetworkBehaviour
     private void HandlePlayersFinishedLevel()
     {
         if (!IsServer) return;
-        if(nLevel.Value >= levelList.Count)
+        if (nLevel.Value >= levelList.Count)
         {
             print("Se acabo este Stage");
             OnStageFinish?.Invoke();
@@ -61,24 +61,16 @@ public class LevelManager : NetworkBehaviour
 
         // Check dependencias (pickaxe, gold). If everything is ok, continue.
         bool goldDependency = false;
-        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value)
-        {
-            goldDependency = true;
-        }
-
-        if (NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value)
+        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value ||
+            NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value)
         {
             goldDependency = true;
         }
 
         // Check dependencias (pickaxe, gold). If everything is ok, continue.
         bool pickaxeDependency = false;
-        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value)
-        {
-            pickaxeDependency = true;
-        }
-
-        if (NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value ||
+            NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value)
         {
             pickaxeDependency = true;
         }
@@ -91,23 +83,9 @@ public class LevelManager : NetworkBehaviour
         }
 
         // Otherwise, we need to check which dependency is not correct, and we inform that to the players.
+        HandleFailedDependencyRPC(goldDependency, pickaxeDependency);
 
-        if (!goldDependency && !pickaxeDependency)
-        {
-            // Avisar que no hay pico ni oro
-        }
-
-        if (!goldDependency)
-        {
-            // Avisar que no hay oro
-        }
-
-        if (!pickaxeDependency)
-        {
-            // Avisar que no hay pico
-        }
-
-        // Finally, we "respawn" the players and clean the door info.
+        // Finally, we "respawn" the players and clean the door info. (This triggers IF there's no Gold or Pickaxe).
         SetUpPlayersPos(false);
         currentDoor.CleanFinishPlayers();
     }
@@ -210,5 +188,22 @@ public class LevelManager : NetworkBehaviour
 
         //Then, we change its position. We do this so we can just move it if it's already there.
         objectTransform.position = setupPos;
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void HandleFailedDependencyRPC(bool goldDependency, bool pickaxeDependency)
+    {
+        if(!goldDependency && !pickaxeDependency)
+        {
+            print("Faltan el oro y el pico.");
+        }
+        else if (!goldDependency)
+        {
+            print("Falta el oro.");
+        }
+        else if (!pickaxeDependency)
+        {
+            print("Falta el pico.");
+        }
     }
 }
