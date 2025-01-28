@@ -40,22 +40,6 @@ public class Door : Breakable
         PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
     }
 
-    protected override void OnTriggerEnter2D(Collider2D collision)
-    {
-        base.OnTriggerEnter2D(collision);
-
-        if (!exitOpen.Value) return;
-        PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
-    }
-
-    protected override void OnTriggerExit2D(Collider2D collision)
-    {
-        base.OnTriggerExit2D(collision);
-
-        if (!exitOpen.Value) return;
-        PlayerNetwork.OnExit -= OnPlayerGoThroughDoor;
-    }
-
     protected void OnDisable()
     {
         PlayerNetwork.OnExit -= OnPlayerGoThroughDoor;
@@ -78,7 +62,6 @@ public class Door : Breakable
 
     private void OnPlayerGoThroughDoor(ulong player)
     {
-        print($"Player {player} went through the door");
         if (!IsServer)
         {
             RequestHandlePlayerGoThroughRpc(player);
@@ -110,7 +93,6 @@ public class Door : Breakable
     [Rpc(SendTo.Server)]
     private void AllPlayersWentThroughRpc()
     {
-        print("All players finished the level.");
         OnAllPlayersFinish?.Invoke();
     }
 
