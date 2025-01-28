@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -175,6 +176,14 @@ public class PlayerNetwork : NetworkBehaviour
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = true;
+
+            //BORRAR LUEGO, MEJORAR. SOLO ES PARA PROTOTIPO
+            if ((FindObjectOfType<LevelManager>()._nLevel == 0 || FindObjectOfType<LevelManager>()._nLevel == 1) 
+                && FindObjectOfType<LevelManager>().currentStage == 0)
+            {
+                GameObject.FindGameObjectWithTag("GuideText").GetComponent<TMP_Text>().enabled = true;
+                GameObject.FindGameObjectWithTag("GuideText").GetComponent<TMP_Text>().text = "Presiona Espacio para romper.";
+            }
         }
 
         if(collision.gameObject.layer == Mathf.Log(exitLayer, 2))
@@ -213,6 +222,14 @@ public class PlayerNetwork : NetworkBehaviour
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = false;
+
+            //BORRAR LUEGO, MEJORAR. SOLO ES PARA PROTOTIPO
+            if ((FindObjectOfType<LevelManager>()._nLevel == 0 || FindObjectOfType<LevelManager>()._nLevel == 1)
+                && FindObjectOfType<LevelManager>().currentStage == 0)
+            {
+                GameObject.FindGameObjectWithTag("GuideText").GetComponent<TMP_Text>().enabled = false;
+                GameObject.FindGameObjectWithTag("GuideText").GetComponent<TMP_Text>().text = string.Empty;
+            }
         }
 
         if (collision.gameObject.layer == Mathf.Log(exitLayer, 2))

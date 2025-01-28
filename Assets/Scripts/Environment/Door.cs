@@ -35,6 +35,12 @@ public class Door : Breakable
         DoorOpenRpc();
         //If the exit is open when spawned, then subscribe to OnExit, because it won't be broken.
     }
+
+    protected override SpriteRenderer GetBreakableSpriteRenderer()
+    {
+        return rockSprite;
+    }
+
     protected void OnEnable()
     {
         PlayerNetwork.OnExit += OnPlayerGoThroughDoor;

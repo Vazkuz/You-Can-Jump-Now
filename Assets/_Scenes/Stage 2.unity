@@ -1028,6 +1028,7 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
+  breakSprites: []
   rockSprite: {fileID: 628016990}
   exit: {fileID: 879025484}
   exitOpen:
@@ -1959,6 +1960,7 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
+  breakSprites: []
   rockSprite: {fileID: 1057753839}
   exit: {fileID: 120133428}
   exitOpen:
@@ -2561,6 +2563,7 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
+  breakSprites: []
   rockSprite: {fileID: 1769476728}
   exit: {fileID: 861514729}
   exitOpen:
@@ -2819,6 +2822,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4cfad7ac0831444e8a3765781187c6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _currentStage: 1
   levelList:
   - {fileID: 20705076}
   - {fileID: 1782992726}
@@ -2827,6 +2831,8 @@ MonoBehaviour:
   pickaxePrefab: {fileID: 5080277437636149844, guid: bdce0fbd6cbe8fb4796630b0427aca51, type: 3}
   goldPrefab: {fileID: 371269110849871737, guid: d18474d65114a5748b5e3b7e8a1619cd, type: 3}
   targets: []
+  DependencyMsg: {fileID: 0}
+  depMsgTime: 2
 --- !u!114 &1863206708
 MonoBehaviour:
   m_ObjectHideFlags: 0

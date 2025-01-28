@@ -11,6 +11,9 @@ using UnityEngine;
 
 public class LevelManager : NetworkBehaviour
 {
+    public int currentStage { get { return _currentStage; } private set { _currentStage = value; } }
+    [SerializeField] int _currentStage = 0;
+    public int _nLevel { get { return nLevel.Value; } private set { nLevel.Value = value; } }
     private NetworkVariable<int> nLevel = new NetworkVariable<int>(0);
     private NetworkVariable<int> playersSetUp = new NetworkVariable<int>(0);
     [SerializeField] private List<Level> levelList;

@@ -8,9 +8,13 @@ using UnityEngine;
 public class Breakable : NetworkBehaviour
 {
     [SerializeField] protected NetworkVariable<int> health = new NetworkVariable<int>(3);
+    protected int InitialHealth;
     [SerializeField] protected LayerMask playerLayer;
     private NetworkVariable<bool> itsBroken = new NetworkVariable<bool>(false);
     protected NetworkObject networkObject;
+
+    [Tooltip("Break Sprites. Poner solo los de romper, el inicial no.")]
+    [SerializeField] protected List<Sprite> breakSprites;
 
     public static event Action<ulong> OnFinishedMine;
 
@@ -18,6 +22,12 @@ public class Breakable : NetworkBehaviour
     protected virtual void Start()
     {
         networkObject = GetComponent<NetworkObject>();
+        InitialHealth = health.Value;
+    }
+
+    protected virtual SpriteRenderer GetBreakableSpriteRenderer()
+    {
+        return GetComponent<SpriteRenderer>();
     }
 
     // Esto ocurre despues de Start
@@ -54,11 +64,18 @@ public class Breakable : NetworkBehaviour
         health.Value--;
         if (health.Value <= 0)
         {
-            if (IsServer)
-            {
-                OnBreak(player);
-            }
+            if (!IsServer) return;
+
+            OnBreak(player);
+            return;
         }
+        UpdateBreakSpriteRpc(InitialHealth - health.Value - 1);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void UpdateBreakSpriteRpc(int phaseCount)
+    {
+        GetBreakableSpriteRenderer().sprite = breakSprites[phaseCount];
     }
 
     /// <summary>
