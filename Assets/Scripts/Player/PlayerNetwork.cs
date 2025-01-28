@@ -275,7 +275,6 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (pickaxe) grabbable = FindObjectOfType<Pickaxe>();
         else grabbable = FindObjectOfType<Gold>();
-        print($"Player {OwnerClientId} has grabbed {grabbable.name}");
     }
 
     /// <summary>
