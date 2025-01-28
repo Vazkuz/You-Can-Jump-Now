@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 using Unity.Netcode;
 using Unity.Services.Matchmaker.Models;
 using UnityEditor.PackageManager;
@@ -17,13 +18,14 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] private Transform mainCamera;
     [SerializeField] private Transform pickaxePrefab;
     private Transform pickaxeObjectTransform; // Just to check if there's already a pickaxe in the scene.
-    //private NetworkVariable<bool> isTherePickaxe = new NetworkVariable<bool>(false);
 
     [SerializeField] private Transform goldPrefab;
     private Transform goldObjectTransform; // Just to check if there's already a pickaxe in the scene.
-    //private NetworkVariable<bool> isThereGold = new NetworkVariable<bool>(false);
 
     public List<TriggerTarget> targets;
+
+    [SerializeField] private TMP_Text DependencyMsg;
+    [SerializeField] private float depMsgTime = 2f;
 
     public static event Action OnStageFinish;
     //private bool justConnecting = true;
@@ -33,6 +35,7 @@ public class LevelManager : NetworkBehaviour
         LoadLevel();
         //PlayerNetwork.OnPlayerPrefabSpawn += AsyncSetupPlayerPos;
         Door.OnAllPlayersFinish += HandlePlayersFinishedLevel;
+        DependencyMsg.gameObject.SetActive(false);
     }
     protected void OnDisable()
     {
@@ -190,20 +193,34 @@ public class LevelManager : NetworkBehaviour
         objectTransform.position = setupPos;
     }
 
+    // OJO: TODO ESTO TENDRA QUE HACERSE CON EL TEMA DE LENGUAJE PARA LOCALIZACION. ESTO ES TEMPORAL
     [Rpc(SendTo.Everyone)]
     private void HandleFailedDependencyRPC(bool goldDependency, bool pickaxeDependency)
     {
         if(!goldDependency && !pickaxeDependency)
         {
-            print("Faltan el oro y el pico.");
+            SetDepMessage("Faltan el oro y el pico");
         }
         else if (!goldDependency)
         {
-            print("Falta el oro.");
+            SetDepMessage("Falta el oro");
         }
         else if (!pickaxeDependency)
         {
-            print("Falta el pico.");
+            SetDepMessage("Falta el pico");
         }
+    }
+
+    private void SetDepMessage(string message)
+    {
+        DependencyMsg.text = message;
+        CancelInvoke("TurnOffMessageVisibility");
+        DependencyMsg.gameObject.SetActive(true);
+        Invoke("TurnOffMessageVisibility", depMsgTime);
+    }
+
+    protected void TurnOffMessageVisibility()
+    {
+        DependencyMsg.gameObject.SetActive(false);
     }
 }
