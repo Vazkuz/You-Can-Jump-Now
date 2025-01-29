@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: -1240606697905904865}
   m_Layer: 11
   m_Name: Gold
-  m_TagString: Untagged
+  m_TagString: Grabbable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -177,6 +177,8 @@ MonoBehaviour:
   triggerCollider: {fileID: 6921126029498120709}
   body: {fileID: 8648584763390485112}
   grabbedObject: {fileID: 11400000, guid: d168bca9c2d96aa43ba143826d795fc7, type: 2}
+  lastSavedPos:
+    m_InternalValue: {x: 0, y: 0, z: 0}
 --- !u!114 &-1240606697905904865
 MonoBehaviour:
   m_ObjectHideFlags: 0

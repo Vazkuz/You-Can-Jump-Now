@@ -6,6 +6,7 @@ TagManager:
   tags:
   - MovablePlatform
   - GuideText
+  - Grabbable
   layers:
   - Default
   - TransparentFX

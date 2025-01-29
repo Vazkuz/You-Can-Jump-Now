@@ -107,11 +107,25 @@ public class LevelManager : NetworkBehaviour
 
         SetUpPlayersPos();
 
-        if(!FindObjectOfType<Pickaxe>()) 
+        print($"Setting up grabbables last saved pos. Pickaxe: {levelList[nLevel.Value].pickaxePos.position}");
+        if (FindObjectOfType<Pickaxe>())
+        {
+            FindObjectOfType<Pickaxe>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[nLevel.Value].pickaxePos.position;
+        }
+        else
+        {
             SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[nLevel.Value].pickaxePos.position);
+        }
 
-        if (!FindObjectOfType<Gold>())
+        if (FindObjectOfType<Gold>())
+        {
+            FindObjectOfType<Gold>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[nLevel.Value].goldPos.position;
+        }
+        else
+        {
             SetUpObject(goldObjectTransform, goldPrefab, levelList[nLevel.Value].goldPos.position);
+        }
+
         nLevel.Value++;
     }
 
@@ -127,14 +141,17 @@ public class LevelManager : NetworkBehaviour
                 if (player.GetComponent<PlayerNetwork>().hasGold.Value)
                 {
                     player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[0].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[0].position;
                 }
                 else if (player.GetComponent<PlayerNetwork>().hasPickaxe.Value)
                 {
                     player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[1].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[1].position;
                 }
                 else
                 {
                     player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
                 }
                 playersSetUp.Value++;
             }

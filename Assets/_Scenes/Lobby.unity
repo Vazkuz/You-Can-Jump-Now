@@ -187,6 +187,7 @@ MonoBehaviour:
   _playersPos:
   - {fileID: 1963955566}
   - {fileID: 1340403089}
+  _door: {fileID: 0}
 --- !u!1 &77682057
 GameObject:
   m_ObjectHideFlags: 0
@@ -1055,6 +1056,7 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
+  breakSprites: []
   rockSprite: {fileID: 1057753839}
   exit: {fileID: 120133428}
   exitOpen:

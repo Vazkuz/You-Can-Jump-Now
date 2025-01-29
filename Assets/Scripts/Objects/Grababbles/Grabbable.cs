@@ -18,6 +18,8 @@ public class Grabbable : NetworkBehaviour
     bool isParented = false;
     CancellationTokenSource tokenSource;
 
+    public NetworkVariable<Vector3> lastSavedPos;
+
     protected void OnValidate()
     {
         UpdateSprite();
@@ -145,5 +147,12 @@ public class Grabbable : NetworkBehaviour
         base.OnDestroy();
         PlayerNetwork.OnShowLocalGrabbable -= OnHideNetworkGrabbable;
         PlayerNetwork.OnHideLocalGrabbable -= OnShowNetworkGrabbable;
+    }
+
+    public void Death()
+    {
+        if (!IsOwner) return;
+        //AÑADIR: PARTÍCULAS DE MUERTE O ALGO, Y LUEGO PARTÍCULAS PARA REGRESAR O ALGO ASÍ
+        transform.position = lastSavedPos.Value;
     }
 }

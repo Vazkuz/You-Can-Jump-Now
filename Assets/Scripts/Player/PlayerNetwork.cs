@@ -69,7 +69,9 @@ public class PlayerNetwork : NetworkBehaviour
     public static event Action<ulong> OnExit;
 
     [Header("Lobby Vars")]
-    [SerializeField] SpriteRenderer hostSign;
+    [SerializeField] private SpriteRenderer hostSign;
+
+    [HideInInspector] public NetworkVariable<Vector3> lastSavedPos;
 
     //Pressure plates zone
     PlateInteractable plateInteractable;
@@ -534,6 +536,13 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (newMenuState) DisableMovement();
         else EnableMovement(); 
+    }
+
+    public void Death()
+    {
+        if (!IsOwner) return;
+        //AÑADIR: PARTÍCULAS DE MUERTE O ALGO, Y LUEGO PARTÍCULAS PARA REGRESAR O ALGO ASÍ
+        SetUpPlayer(lastSavedPos.Value);
     }
 
 }
