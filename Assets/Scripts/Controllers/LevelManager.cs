@@ -121,7 +121,6 @@ public class LevelManager : NetworkBehaviour
 
         foreach (ulong playerId in playersId)
         {
-            //SetupPlayerPosRpc(playerId);
             Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
             if (newLevel)
             {
