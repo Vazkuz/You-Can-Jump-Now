@@ -16,8 +16,6 @@ public class Breakable : NetworkBehaviour
     [Tooltip("Break Sprites. Poner solo los de romper, el inicial no.")]
     [SerializeField] protected List<Sprite> breakSprites;
 
-    public static event Action<ulong> OnFinishedMine;
-
     //Start, on in-scene objects, occurs BEFORE OnNetworkSpawn.
     protected virtual void Start()
     {
@@ -85,16 +83,5 @@ public class Breakable : NetworkBehaviour
     protected virtual void OnBreak(ulong player)
     {
         itsBroken.Value = true;
-        FinishMineRpc(player);
-    }
-
-    /// <summary>
-    /// Once the mineral's health is 0, it has been mined completely. All clients get this information with this Rpc.
-    /// </summary>
-    /// <param name="clientId">ID of the last player that mined the mineral. In other words, id of the player who destroyed the mineral.</param>
-    [Rpc(SendTo.Everyone)]
-    private void FinishMineRpc(ulong clientId)
-    {
-        OnFinishedMine?.Invoke(clientId);
     }
 }
