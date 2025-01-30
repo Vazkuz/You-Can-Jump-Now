@@ -13,8 +13,8 @@ public class Mineral : Breakable
     protected override void OnBreak(ulong player)
     {
         base.OnBreak(player); //eventualmente cambiar esto, no se destruye sino que se esconde mientras el jugador no salte o algo asi
-        networkObject.Despawn(gameObject);
         FinishMineRpc(player);
+        networkObject.Despawn(gameObject);
     }
 
     /// <summary>
