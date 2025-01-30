@@ -17,7 +17,7 @@ public class PressurePlate : NetworkBehaviour
 
     protected void Start()
     {
-        transform.position = unpressedPos.position;
+        transform.localPosition = unpressedPos.localPosition;
         currentWeight = 0;
     }
 
