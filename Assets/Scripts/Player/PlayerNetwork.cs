@@ -54,7 +54,6 @@ public class PlayerNetwork : NetworkBehaviour
     private Grabbable grabbable;
     [SerializeField] private GrabbedObject pickaxeSO;
     [SerializeField] private GrabbedObject goldSO;
-    public static event Action<float> OnWeightAdded;
     public static event Action<ulong, string> OnShowLocalGrabbable;
     public static event Action<string> OnHideLocalGrabbable;
 
@@ -356,17 +355,6 @@ public class PlayerNetwork : NetworkBehaviour
         {
             GrabObjectOnServer();
         }
-
-        if (grabbable.GetComponent<PlateInteractable>() == null) return;
-
-        plateInteractable.AddWeight(grabbable.GetComponent<PlateInteractable>().weight.Value);
-        AddWeightRpc(grabbable.GetComponent<PlateInteractable>().weight.Value);
-    }
-
-    [Rpc(SendTo.Everyone)]
-    private void AddWeightRpc(float addedWeight)
-    {
-        OnWeightAdded?.Invoke(addedWeight);
     }
 
     private void GrabObjectOnServer()
@@ -398,12 +386,6 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (!IsOwner && !isDebugScene) return;
 
-        if (grabbable.GetComponent<PlateInteractable>() != null)
-        {
-            plateInteractable.AddWeight(-grabbable.GetComponent<PlateInteractable>().weight.Value);
-            AddWeightRpc(-grabbable.GetComponent<PlateInteractable>().weight.Value);
-        }
-
         if (!IsServer)
         {
             RequestReleaseObjectRpc(hand.transform.position);
@@ -426,7 +408,6 @@ public class PlayerNetwork : NetworkBehaviour
     {
         grabbable.transform.position = handPos;
         OnHideLocalGrabbable?.Invoke(grabbable.name);
-        //ReleaseObjectOnServer();
         hand.GetComponent<SpriteRenderer>().sprite = null;
     }
 
