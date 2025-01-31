@@ -144,6 +144,7 @@ GameObject:
   - component: {fileID: 6321701471032602787}
   - component: {fileID: 8557423013729598273}
   - component: {fileID: -6146557466243632822}
+  - component: {fileID: 5006936425109959839}
   m_Layer: 6
   m_Name: Pickaxe
   m_TagString: Grabbable
@@ -308,3 +309,16 @@ MonoBehaviour:
   grabbedObject: {fileID: 11400000, guid: 98ae8a6ac8d10364e9cbb10eff4fafd6, type: 2}
   lastSavedPos:
     m_InternalValue: {x: 0, y: 0, z: 0}
+--- !u!114 &5006936425109959839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7811296632346715494}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 511d0adea501bb64b8494daf297fbfc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  typeValue: 2
