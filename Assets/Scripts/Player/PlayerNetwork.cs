@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Collections;
+using Unity.Multiplayer.Samples.Utilities.ClientAuthority;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -74,6 +75,7 @@ public class PlayerNetwork : NetworkBehaviour
 
     //Pressure plates zone
     PlateInteractable plateInteractable;
+    ClientNetworkTransform networkTransform;
 
 
     public static event Action<ulong> OnPlayerPrefabSpawn;
@@ -94,6 +96,7 @@ public class PlayerNetwork : NetworkBehaviour
         mayJumpTime = 0f;
         moveSpeed = moveSpeedGround;
         plateInteractable = GetComponent<PlateInteractable>();
+        networkTransform = GetComponent<ClientNetworkTransform>();
         //if(!IsServer) hostSign.enabled = false; // MAS ADELANTE AÑADIR ESTO, JUNTO CON UN LOBBY MANAGER.
     }
     public override void OnNetworkSpawn()
@@ -169,6 +172,9 @@ public class PlayerNetwork : NetworkBehaviour
         {
             if (IsLocalPlayer)
             {
+                print("Trigger ENTER con Moving Platform.");
+                print($"New Parent: {FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>())}");
+                networkTransform.InLocalSpace = true;
                 transform.parent = collision.transform;
                 ReparentingRpc(FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>()));
             }
@@ -215,7 +221,9 @@ public class PlayerNetwork : NetworkBehaviour
         {
             if (IsLocalPlayer)
             {
+                print("Trigger EXIT con Moving Platform.");
                 transform.parent = null;
+                networkTransform.InLocalSpace = false;
                 ReparentingRpc(-1);
             }
         }
@@ -254,12 +262,14 @@ public class PlayerNetwork : NetworkBehaviour
     [Rpc(SendTo.NotOwner)]
     private void ReparentingRpc(int newParent)
     {
+        print($"newParent es: {newParent}");
         if(newParent < 0)
         {
             transform.parent = null;
         }
         else
         {
+            print($"Emparentando al otro jugador a {FindObjectOfType<LevelManager>().targets[newParent].name}");
             transform.parent = FindObjectOfType<LevelManager>().targets[newParent].transform;
         }
     }
