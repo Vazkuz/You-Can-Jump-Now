@@ -44,21 +44,6 @@ public class MovablePlatform : TriggerTarget
         CheckIfCanMove();
     }
 
-    //protected void Update()
-    //{
-    //    if (isActive.Value && transform.position == activePos.position) return;
-    //    if (!isActive.Value && transform.position == inactivePos.position) return;
-
-    //    if (isActive.Value)
-    //    {
-    //        transform.position = Vector3.MoveTowards(transform.position, activePos.position, speed * Time.deltaTime);
-    //    }
-    //    else
-    //    {
-    //        transform.position = Vector3.MoveTowards(transform.position, inactivePos.position, speed * Time.deltaTime);
-    //    }
-    //}
-
     protected void FixedUpdate()
     {
         if (!canMove.Value) return;
@@ -90,18 +75,6 @@ public class MovablePlatform : TriggerTarget
     {
         if (!IsServer) return;
 
-        //if (other == null)
-        //{
-        //    canMove.Value = true;
-        //    return;
-        //}
-
-        //Vector2 collisionVector = collision.transform.position - transform.position;
-
-        //if (Vector2.Dot(collisionVector, direction) <= 0)
-        //{
-        //    canMove.Value = false;
-        //}
         foreach(Vector2 collDir in CollidersList())
         {
             if(Vector2.Dot(collDir, direction) > 0)
