@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - MovablePlatform
+  - GuideText
+  - Grabbable
   layers:
   - Default
   - TransparentFX

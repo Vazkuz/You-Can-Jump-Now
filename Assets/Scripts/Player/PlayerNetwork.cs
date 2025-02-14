@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Collections;
+using Unity.Multiplayer.Samples.Utilities.ClientAuthority;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -53,7 +55,6 @@ public class PlayerNetwork : NetworkBehaviour
     private Grabbable grabbable;
     [SerializeField] private GrabbedObject pickaxeSO;
     [SerializeField] private GrabbedObject goldSO;
-    public static event Action<float> OnWeightAdded;
     public static event Action<ulong, string> OnShowLocalGrabbable;
     public static event Action<string> OnHideLocalGrabbable;
 
@@ -68,10 +69,13 @@ public class PlayerNetwork : NetworkBehaviour
     public static event Action<ulong> OnExit;
 
     [Header("Lobby Vars")]
-    [SerializeField] SpriteRenderer hostSign;
+    [SerializeField] private SpriteRenderer hostSign;
+
+    [HideInInspector] public NetworkVariable<Vector3> lastSavedPos;
 
     //Pressure plates zone
     PlateInteractable plateInteractable;
+    ClientNetworkTransform networkTransform;
 
 
     public static event Action<ulong> OnPlayerPrefabSpawn;
@@ -92,6 +96,7 @@ public class PlayerNetwork : NetworkBehaviour
         mayJumpTime = 0f;
         moveSpeed = moveSpeedGround;
         plateInteractable = GetComponent<PlateInteractable>();
+        networkTransform = GetComponent<ClientNetworkTransform>();
         //if(!IsServer) hostSign.enabled = false; // MAS ADELANTE AÑADIR ESTO, JUNTO CON UN LOBBY MANAGER.
     }
     public override void OnNetworkSpawn()
@@ -167,6 +172,9 @@ public class PlayerNetwork : NetworkBehaviour
         {
             if (IsLocalPlayer)
             {
+                print("Trigger ENTER con Moving Platform.");
+                print($"New Parent: {FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>())}");
+                networkTransform.InLocalSpace = true;
                 transform.parent = collision.transform;
                 ReparentingRpc(FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>()));
             }
@@ -175,6 +183,14 @@ public class PlayerNetwork : NetworkBehaviour
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = true;
+
+            //BORRAR LUEGO, MEJORAR. SOLO ES PARA PROTOTIPO
+            if ((FindObjectOfType<LevelManager>()._nLevel == 0 || FindObjectOfType<LevelManager>()._nLevel == 1) 
+                && FindObjectOfType<LevelManager>().currentStage == 0)
+            {
+                GameObject.FindGameObjectWithTag("GuideText").GetComponent<TMP_Text>().enabled = true;
+                GameObject.FindGameObjectWithTag("GuideText").GetComponent<TMP_Text>().text = "Presiona Espacio para romper.";
+            }
         }
 
         if(collision.gameObject.layer == Mathf.Log(exitLayer, 2))
@@ -205,7 +221,9 @@ public class PlayerNetwork : NetworkBehaviour
         {
             if (IsLocalPlayer)
             {
+                print("Trigger EXIT con Moving Platform.");
                 transform.parent = null;
+                networkTransform.InLocalSpace = false;
                 ReparentingRpc(-1);
             }
         }
@@ -213,6 +231,14 @@ public class PlayerNetwork : NetworkBehaviour
         if (collision.gameObject.layer == Mathf.Log(breakableLayer, 2))
         {
             canMine = false;
+
+            //BORRAR LUEGO, MEJORAR. SOLO ES PARA PROTOTIPO
+            if ((FindObjectOfType<LevelManager>()._nLevel == 0 || FindObjectOfType<LevelManager>()._nLevel == 1)
+                && FindObjectOfType<LevelManager>().currentStage == 0)
+            {
+                GameObject.FindGameObjectWithTag("GuideText").GetComponent<TMP_Text>().enabled = false;
+                GameObject.FindGameObjectWithTag("GuideText").GetComponent<TMP_Text>().text = string.Empty;
+            }
         }
 
         if (collision.gameObject.layer == Mathf.Log(exitLayer, 2))
@@ -236,12 +262,14 @@ public class PlayerNetwork : NetworkBehaviour
     [Rpc(SendTo.NotOwner)]
     private void ReparentingRpc(int newParent)
     {
+        print($"newParent es: {newParent}");
         if(newParent < 0)
         {
             transform.parent = null;
         }
         else
         {
+            print($"Emparentando al otro jugador a {FindObjectOfType<LevelManager>().targets[newParent].name}");
             transform.parent = FindObjectOfType<LevelManager>().targets[newParent].transform;
         }
     }
@@ -275,7 +303,6 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (pickaxe) grabbable = FindObjectOfType<Pickaxe>();
         else grabbable = FindObjectOfType<Gold>();
-        print($"Player {OwnerClientId} has grabbed {grabbable.name}");
     }
 
     /// <summary>
@@ -338,17 +365,6 @@ public class PlayerNetwork : NetworkBehaviour
         {
             GrabObjectOnServer();
         }
-
-        if (grabbable.GetComponent<PlateInteractable>() == null) return;
-
-        plateInteractable.AddWeight(grabbable.GetComponent<PlateInteractable>().weight.Value);
-        AddWeightRpc(grabbable.GetComponent<PlateInteractable>().weight.Value);
-    }
-
-    [Rpc(SendTo.Everyone)]
-    private void AddWeightRpc(float addedWeight)
-    {
-        OnWeightAdded?.Invoke(addedWeight);
     }
 
     private void GrabObjectOnServer()
@@ -380,12 +396,6 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (!IsOwner && !isDebugScene) return;
 
-        if (grabbable.GetComponent<PlateInteractable>() != null)
-        {
-            plateInteractable.AddWeight(-grabbable.GetComponent<PlateInteractable>().weight.Value);
-            AddWeightRpc(-grabbable.GetComponent<PlateInteractable>().weight.Value);
-        }
-
         if (!IsServer)
         {
             RequestReleaseObjectRpc(hand.transform.position);
@@ -408,7 +418,6 @@ public class PlayerNetwork : NetworkBehaviour
     {
         grabbable.transform.position = handPos;
         OnHideLocalGrabbable?.Invoke(grabbable.name);
-        //ReleaseObjectOnServer();
         hand.GetComponent<SpriteRenderer>().sprite = null;
     }
 
@@ -518,6 +527,13 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (newMenuState) DisableMovement();
         else EnableMovement(); 
+    }
+
+    public void Death()
+    {
+        if (!IsOwner) return;
+        //AÑADIR: PARTÍCULAS DE MUERTE O ALGO, Y LUEGO PARTÍCULAS PARA REGRESAR O ALGO ASÍ
+        SetUpPlayer(lastSavedPos.Value);
     }
 
 }

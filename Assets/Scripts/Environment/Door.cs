@@ -35,25 +35,15 @@ public class Door : Breakable
         DoorOpenRpc();
         //If the exit is open when spawned, then subscribe to OnExit, because it won't be broken.
     }
+
+    protected override SpriteRenderer GetBreakableSpriteRenderer()
+    {
+        return rockSprite;
+    }
+
     protected void OnEnable()
     {
         PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
-    }
-
-    protected override void OnTriggerEnter2D(Collider2D collision)
-    {
-        base.OnTriggerEnter2D(collision);
-
-        if (!exitOpen.Value) return;
-        PlayerNetwork.OnExit += OnPlayerGoThroughDoor;
-    }
-
-    protected override void OnTriggerExit2D(Collider2D collision)
-    {
-        base.OnTriggerExit2D(collision);
-
-        if (!exitOpen.Value) return;
-        PlayerNetwork.OnExit -= OnPlayerGoThroughDoor;
     }
 
     protected void OnDisable()
@@ -78,7 +68,6 @@ public class Door : Breakable
 
     private void OnPlayerGoThroughDoor(ulong player)
     {
-        print($"Player {player} went through the door");
         if (!IsServer)
         {
             RequestHandlePlayerGoThroughRpc(player);
@@ -110,7 +99,6 @@ public class Door : Breakable
     [Rpc(SendTo.Server)]
     private void AllPlayersWentThroughRpc()
     {
-        print("All players finished the level.");
         OnAllPlayersFinish?.Invoke();
     }
 

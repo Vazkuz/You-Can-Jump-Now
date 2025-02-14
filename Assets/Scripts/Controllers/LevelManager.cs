@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 using Unity.Netcode;
 using Unity.Services.Matchmaker.Models;
 using UnityEditor.PackageManager;
@@ -10,20 +11,24 @@ using UnityEngine;
 
 public class LevelManager : NetworkBehaviour
 {
-    private NetworkVariable<int> nLevel =  new NetworkVariable<int>(0);
+    public int currentStage { get { return _currentStage; } private set { _currentStage = value; } }
+    [SerializeField] int _currentStage = 0;
+    public int _nLevel { get { return nLevel.Value; } private set { nLevel.Value = value; } }
+    private NetworkVariable<int> nLevel = new NetworkVariable<int>(0);
     private NetworkVariable<int> playersSetUp = new NetworkVariable<int>(0);
     [SerializeField] private List<Level> levelList;
     private Door currentDoor;
     [SerializeField] private Transform mainCamera;
     [SerializeField] private Transform pickaxePrefab;
     private Transform pickaxeObjectTransform; // Just to check if there's already a pickaxe in the scene.
-    //private NetworkVariable<bool> isTherePickaxe = new NetworkVariable<bool>(false);
 
     [SerializeField] private Transform goldPrefab;
     private Transform goldObjectTransform; // Just to check if there's already a pickaxe in the scene.
-    //private NetworkVariable<bool> isThereGold = new NetworkVariable<bool>(false);
 
     public List<TriggerTarget> targets;
+
+    [SerializeField] private TMP_Text DependencyMsg;
+    [SerializeField] private float depMsgTime = 2f;
 
     public static event Action OnStageFinish;
     //private bool justConnecting = true;
@@ -33,6 +38,7 @@ public class LevelManager : NetworkBehaviour
         LoadLevel();
         //PlayerNetwork.OnPlayerPrefabSpawn += AsyncSetupPlayerPos;
         Door.OnAllPlayersFinish += HandlePlayersFinishedLevel;
+        DependencyMsg.gameObject.SetActive(false);
     }
     protected void OnDisable()
     {
@@ -52,7 +58,7 @@ public class LevelManager : NetworkBehaviour
     private void HandlePlayersFinishedLevel()
     {
         if (!IsServer) return;
-        if(nLevel.Value >= levelList.Count)
+        if (nLevel.Value >= levelList.Count)
         {
             print("Se acabo este Stage");
             OnStageFinish?.Invoke();
@@ -61,24 +67,16 @@ public class LevelManager : NetworkBehaviour
 
         // Check dependencias (pickaxe, gold). If everything is ok, continue.
         bool goldDependency = false;
-        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value)
-        {
-            goldDependency = true;
-        }
-
-        if (NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value)
+        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value ||
+            NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasGold.Value)
         {
             goldDependency = true;
         }
 
         // Check dependencias (pickaxe, gold). If everything is ok, continue.
         bool pickaxeDependency = false;
-        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value)
-        {
-            pickaxeDependency = true;
-        }
-
-        if (NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+        if (NetworkManager.ConnectedClients[0].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value ||
+            NetworkManager.ConnectedClients[1].PlayerObject.GetComponent<PlayerNetwork>().hasPickaxe.Value)
         {
             pickaxeDependency = true;
         }
@@ -91,23 +89,9 @@ public class LevelManager : NetworkBehaviour
         }
 
         // Otherwise, we need to check which dependency is not correct, and we inform that to the players.
+        HandleFailedDependencyRPC(goldDependency, pickaxeDependency);
 
-        if (!goldDependency && !pickaxeDependency)
-        {
-            // Avisar que no hay pico ni oro
-        }
-
-        if (!goldDependency)
-        {
-            // Avisar que no hay oro
-        }
-
-        if (!pickaxeDependency)
-        {
-            // Avisar que no hay pico
-        }
-
-        // Finally, we "respawn" the players and clean the door info.
+        // Finally, we "respawn" the players and clean the door info. (This triggers IF there's no Gold or Pickaxe).
         SetUpPlayersPos(false);
         currentDoor.CleanFinishPlayers();
     }
@@ -123,11 +107,25 @@ public class LevelManager : NetworkBehaviour
 
         SetUpPlayersPos();
 
-        if(!FindObjectOfType<Pickaxe>()) 
+        print($"Setting up grabbables last saved pos. Pickaxe: {levelList[nLevel.Value].pickaxePos.position}");
+        if (FindObjectOfType<Pickaxe>())
+        {
+            FindObjectOfType<Pickaxe>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[nLevel.Value].pickaxePos.position;
+        }
+        else
+        {
             SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[nLevel.Value].pickaxePos.position);
+        }
 
-        if (!FindObjectOfType<Gold>())
+        if (FindObjectOfType<Gold>())
+        {
+            FindObjectOfType<Gold>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[nLevel.Value].goldPos.position;
+        }
+        else
+        {
             SetUpObject(goldObjectTransform, goldPrefab, levelList[nLevel.Value].goldPos.position);
+        }
+
         nLevel.Value++;
     }
 
@@ -137,11 +135,24 @@ public class LevelManager : NetworkBehaviour
 
         foreach (ulong playerId in playersId)
         {
-            //SetupPlayerPosRpc(playerId);
             Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
             if (newLevel)
             {
-                player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
+                if (player.GetComponent<PlayerNetwork>().hasGold.Value)
+                {
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[0].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[0].position;
+                }
+                else if (player.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+                {
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[1].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[1].position;
+                }
+                else
+                {
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
+                }
                 playersSetUp.Value++;
             }
             else
@@ -199,5 +210,36 @@ public class LevelManager : NetworkBehaviour
 
         //Then, we change its position. We do this so we can just move it if it's already there.
         objectTransform.position = setupPos;
+    }
+
+    // OJO: TODO ESTO TENDRA QUE HACERSE CON EL TEMA DE LENGUAJE PARA LOCALIZACION. ESTO ES TEMPORAL
+    [Rpc(SendTo.Everyone)]
+    private void HandleFailedDependencyRPC(bool goldDependency, bool pickaxeDependency)
+    {
+        if(!goldDependency && !pickaxeDependency)
+        {
+            SetDepMessage("Faltan el oro y el pico");
+        }
+        else if (!goldDependency)
+        {
+            SetDepMessage("Falta el oro");
+        }
+        else if (!pickaxeDependency)
+        {
+            SetDepMessage("Falta el pico");
+        }
+    }
+
+    private void SetDepMessage(string message)
+    {
+        DependencyMsg.text = message;
+        CancelInvoke("TurnOffMessageVisibility");
+        DependencyMsg.gameObject.SetActive(true);
+        Invoke("TurnOffMessageVisibility", depMsgTime);
+    }
+
+    protected void TurnOffMessageVisibility()
+    {
+        DependencyMsg.gameObject.SetActive(false);
     }
 }

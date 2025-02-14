@@ -7,49 +7,47 @@ using UnityEngine;
 public class PressurePlate : NetworkBehaviour
 {
     [SerializeField] private Transform unpressedPos;
-    [SerializeField] private Transform pressedPos;
-    [SerializeField] private float minimumWeight;
     [SerializeField] private TriggerTarget target;
-
-    private float currentWeight;
-
+    [Tooltip("Activator Types Required for this plate")] [SerializeField] private List<PlateActivator.ActivatorType> typesRq;
+    private int typeRqsMet = 0;
     private NetworkVariable<bool> isPressed = new NetworkVariable<bool>(false);
 
     protected void Start()
     {
-        transform.position = unpressedPos.position;
-        currentWeight = 0;
+        transform.localPosition = unpressedPos.localPosition;
     }
 
     protected void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.GetComponent<PlateInteractable>() == null) return;
+        if (collision.gameObject.GetComponent<PlateActivator>() == null) return;
         if (!collision.enabled) return;
 
-        OnWeightAdded(collision.gameObject.GetComponent<PlateInteractable>().weight.Value);
+        OnActivatorAdd(collision.gameObject.GetComponent<PlateActivator>().type, true);
 
         if (collision.gameObject.GetComponent<PlayerNetwork>() == null) return;
-        PlayerNetwork.OnWeightAdded += OnWeightAdded;
     }
 
     protected void OnCollisionExit2D(Collision2D collision)
     {
-        if (collision.gameObject.GetComponent<PlateInteractable>() == null) return;
+        if (collision.gameObject.GetComponent<PlateActivator>() == null) return;
         if (!collision.enabled) return;
 
-        OnWeightAdded(-collision.gameObject.GetComponent<PlateInteractable>().weight.Value);
+        OnActivatorAdd(collision.gameObject.GetComponent<PlateActivator>().type, false);
 
         if (collision.gameObject.GetComponent<PlayerNetwork>() == null) return;
-        PlayerNetwork.OnWeightAdded -= OnWeightAdded;
     }
 
-    private void OnWeightAdded(float releasedWeight)
-    {
-        currentWeight += releasedWeight;
 
+    private void OnActivatorAdd(PlateActivator.ActivatorType type, bool isAdded)
+    {
         if (!IsServer) return;
 
-        if(currentWeight >= minimumWeight)
+        if(!typesRq.Contains(type)) return;
+
+        if(isAdded) typeRqsMet++;
+        else typeRqsMet--;
+
+        if (typeRqsMet >= typesRq.Count)
         {
             isPressed.Value = true;
             target.Activate();
@@ -64,10 +62,5 @@ public class PressurePlate : NetworkBehaviour
 
             target.Deactivate();
         }
-    }
-
-    protected void OnDisable()
-    {
-        PlayerNetwork.OnWeightAdded -= OnWeightAdded;
     }
 }
