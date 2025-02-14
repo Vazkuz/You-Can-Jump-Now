@@ -9,11 +9,9 @@ public class TriggerTarget : NetworkBehaviour
     public virtual void Activate()
     {
         isActive.Value = true;
-        print($"Target {name} activated.");
     }
     public virtual void Deactivate()
     {
         isActive.Value = false;
-        print($"Target {name} deactivated.");
     }
 }
