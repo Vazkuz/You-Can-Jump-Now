@@ -18,6 +18,6 @@ public class Level : MonoBehaviour
     public Door door { get { return _door; } private set { _door = value; } }
     [SerializeField] private Door _door;
 
-    public List<Mineral> mineral { get { return _mineral; } private set { _mineral = value; } }
-    [SerializeField] private List<Mineral> _mineral;
+    public List<Mineral> minerals { get { return _minerals; } private set { _minerals = value; } }
+    [SerializeField] private List<Mineral> _minerals;
 }

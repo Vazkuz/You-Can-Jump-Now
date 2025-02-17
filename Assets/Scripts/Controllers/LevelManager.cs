@@ -98,12 +98,12 @@ public class LevelManager : NetworkBehaviour
         currentDoor.CleanFinishPlayers();
     }
 
-    private void LoadLevel(int levelToLoad)
+    private void LoadLevel(int levelToLoad, bool isRetry = false)
     {
         if (!IsServer) return;
         //LOADSCREEN FUNCTIONALITY GOES HERE (WHEN WE HAVE IT)
         playersSetUp.Value = 0;
-        SetUpLevelRpc(levelToLoad);
+        SetUpLevelRpc(levelToLoad, isRetry);
 
         //if (justConnecting) return;
 
@@ -164,14 +164,20 @@ public class LevelManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    private void SetUpLevelRpc(int levelToSetup)
+    private void SetUpLevelRpc(int levelToSetup, bool isRetry = false)
     {
         Level currentLevel = levelList[levelToSetup];
         currentDoor = currentLevel.door;
+        if(IsServer && isRetry) currentDoor.ResetInitialConditions();
         currentLevel.gameObject.SetActive(true);
         foreach (Level level in levelList)
         {
             if(level != currentLevel) level.gameObject.SetActive(false);
+        }
+
+        foreach(Mineral mineral in currentLevel.minerals)
+        {
+            mineral.ResetInitialConditions();
         }
         mainCamera.position = currentLevel.cameraPos.position;
     }
@@ -241,5 +247,10 @@ public class LevelManager : NetworkBehaviour
     protected void TurnOffMessageVisibility()
     {
         DependencyMsg.gameObject.SetActive(false);
+    }
+
+    public void ResetLevel()
+    {
+        LoadLevel(nLevel.Value, true);
     }
 }

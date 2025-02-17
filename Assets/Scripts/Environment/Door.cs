@@ -32,7 +32,7 @@ public class Door : Breakable
         }
 
         //puerta abierta (desde el comienzo)
-        DoorOpenRpc();
+        DoorOpenRpc(true);
         //If the exit is open when spawned, then subscribe to OnExit, because it won't be broken.
     }
 
@@ -56,14 +56,14 @@ public class Door : Breakable
     {
         base.OnBreak(player); // en principio si la puerta se destruye ya no se puede regenerar
         exitOpen.Value = true;
-        DoorOpenRpc();
+        DoorOpenRpc(true);
     }
 
     [Rpc(SendTo.Everyone)]
-    private void DoorOpenRpc()
+    private void DoorOpenRpc(bool isOpen)
     {
-        exit.SetActive(true);
-        rockSprite.enabled = false;
+        exit.SetActive(isOpen);
+        rockSprite.enabled = !isOpen;
     }
 
     private void OnPlayerGoThroughDoor(ulong player)
@@ -105,6 +105,13 @@ public class Door : Breakable
     public void CleanFinishPlayers()
     {
         finishPlayers.Clear();
+    }
+
+    public override void ResetInitialConditions()
+    {
+        base.ResetInitialConditions();
+        exitOpen.Value = false;
+        DoorOpenRpc(false);
     }
 
 }

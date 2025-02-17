@@ -388,6 +388,11 @@ public class PlayerNetwork : NetworkBehaviour
         grabbable.body.enabled = false;
     }
 
+    public void CallReleaseObject()
+    {
+        OnReleaseObject(new InputAction.CallbackContext());
+    }
+
     /// <summary>
     /// Method to release object (pickaxe or gold). Subscribed when the player has grabbed an object (gold or pickaxe).
     /// </summary>
