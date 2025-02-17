@@ -35,7 +35,8 @@ public class LevelManager : NetworkBehaviour
     // Start is called before OnNetworkSpawn (on-scene object)
     protected void Start()
     {
-        LoadLevel();
+        LoadLevel(nLevel.Value);
+        //if(IsServer) nLevel.Value++;
         //PlayerNetwork.OnPlayerPrefabSpawn += AsyncSetupPlayerPos;
         Door.OnAllPlayersFinish += HandlePlayersFinishedLevel;
         DependencyMsg.gameObject.SetActive(false);
@@ -84,7 +85,8 @@ public class LevelManager : NetworkBehaviour
         // If all dependencies are correct, than the new level is loaded and nothing else happens.
         if(goldDependency && pickaxeDependency)
         {
-            LoadLevel();
+            if(IsServer) nLevel.Value++;
+            LoadLevel(nLevel.Value);
             return;
         }
 
@@ -92,44 +94,42 @@ public class LevelManager : NetworkBehaviour
         HandleFailedDependencyRPC(goldDependency, pickaxeDependency);
 
         // Finally, we "respawn" the players and clean the door info. (This triggers IF there's no Gold or Pickaxe).
-        SetUpPlayersPos(false);
+        SetUpPlayersPos(nLevel.Value, false);
         currentDoor.CleanFinishPlayers();
     }
 
-    private void LoadLevel()
+    private void LoadLevel(int levelToLoad)
     {
         if (!IsServer) return;
         //LOADSCREEN FUNCTIONALITY GOES HERE (WHEN WE HAVE IT)
         playersSetUp.Value = 0;
-        SetUpLevelRpc();
+        SetUpLevelRpc(levelToLoad);
 
         //if (justConnecting) return;
 
-        SetUpPlayersPos();
+        SetUpPlayersPos(levelToLoad);
 
-        print($"Setting up grabbables last saved pos. Pickaxe: {levelList[nLevel.Value].pickaxePos.position}");
+        print($"Setting up grabbables last saved pos. Pickaxe: {levelList[levelToLoad].pickaxePos.position}");
         if (FindObjectOfType<Pickaxe>())
         {
-            FindObjectOfType<Pickaxe>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[nLevel.Value].pickaxePos.position;
+            FindObjectOfType<Pickaxe>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[levelToLoad].pickaxePos.position;
         }
         else
         {
-            SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[nLevel.Value].pickaxePos.position);
+            SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[levelToLoad].pickaxePos.position);
         }
 
         if (FindObjectOfType<Gold>())
         {
-            FindObjectOfType<Gold>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[nLevel.Value].goldPos.position;
+            FindObjectOfType<Gold>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[levelToLoad].goldPos.position;
         }
         else
         {
-            SetUpObject(goldObjectTransform, goldPrefab, levelList[nLevel.Value].goldPos.position);
+            SetUpObject(goldObjectTransform, goldPrefab, levelList[levelToLoad].goldPos.position);
         }
-
-        nLevel.Value++;
     }
 
-    private void SetUpPlayersPos(bool newLevel = true)
+    private void SetUpPlayersPos(int level, bool newLevel = true)
     {
         List<ulong> playersId = NetworkManager.Singleton.ConnectedClients.Keys.ToList();
 
@@ -140,18 +140,18 @@ public class LevelManager : NetworkBehaviour
             {
                 if (player.GetComponent<PlayerNetwork>().hasGold.Value)
                 {
-                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[0].position);
-                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[0].position;
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[0].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[0].position;
                 }
                 else if (player.GetComponent<PlayerNetwork>().hasPickaxe.Value)
                 {
-                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[1].position);
-                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[1].position;
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[1].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[1].position;
                 }
                 else
                 {
-                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
-                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[playersSetUp.Value].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[playersSetUp.Value].position;
                 }
                 playersSetUp.Value++;
             }
@@ -164,9 +164,9 @@ public class LevelManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    private void SetUpLevelRpc()
+    private void SetUpLevelRpc(int levelToSetup)
     {
-        Level currentLevel = levelList[nLevel.Value];
+        Level currentLevel = levelList[levelToSetup];
         currentDoor = currentLevel.door;
         currentLevel.gameObject.SetActive(true);
         foreach (Level level in levelList)
