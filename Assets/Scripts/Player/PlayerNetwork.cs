@@ -390,6 +390,8 @@ public class PlayerNetwork : NetworkBehaviour
 
     public void CallReleaseObject()
     {
+        if (!IsOwner && !isDebugScene) return;
+        if (!hasGold.Value && !hasPickaxe.Value) return;
         OnReleaseObject(new InputAction.CallbackContext());
     }
 

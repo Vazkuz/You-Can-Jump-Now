@@ -102,6 +102,24 @@ public class LevelManager : NetworkBehaviour
     {
         if (!IsServer) return;
         //LOADSCREEN FUNCTIONALITY GOES HERE (WHEN WE HAVE IT)
+        if (isRetry)
+        {
+            List<ulong> playersId = NetworkManager.Singleton.ConnectedClients.Keys.ToList();
+
+            foreach (ulong playerId in playersId)
+            {
+                ClientRpcParams clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { playerId }
+                    }
+                };
+
+                MakePlayersReleaseObjectsClientRpc(playerId, clientRpcParams);
+            }
+        }
+
         playersSetUp.Value = 0;
         SetUpLevelRpc(levelToLoad, isRetry);
 
@@ -127,6 +145,13 @@ public class LevelManager : NetworkBehaviour
         {
             SetUpObject(goldObjectTransform, goldPrefab, levelList[levelToLoad].goldPos.position);
         }
+    }
+
+    [ClientRpc]
+    private void MakePlayersReleaseObjectsClientRpc(ulong playerId, ClientRpcParams clientRpcParams = default)
+    {
+        Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
+        player.GetComponent<PlayerNetwork>().CallReleaseObject();
     }
 
     private void SetUpPlayersPos(int level, bool newLevel = true)
