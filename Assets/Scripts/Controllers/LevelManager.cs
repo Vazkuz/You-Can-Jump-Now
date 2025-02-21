@@ -127,23 +127,30 @@ public class LevelManager : NetworkBehaviour
 
         SetUpPlayersPos(levelToLoad);
 
-        print($"Setting up grabbables last saved pos. Pickaxe: {levelList[levelToLoad].pickaxePos.position}");
-        if (FindObjectOfType<Pickaxe>())
+        if (FindObjectOfType<Pickaxe>() && !isRetry)
         {
             FindObjectOfType<Pickaxe>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[levelToLoad].pickaxePos.position;
         }
+        else if (isRetry)
+        {
+            SetUpObject(pickaxeObjectTransform, FindObjectOfType<Pickaxe>().transform, levelList[levelToLoad].pickaxePos.position, isRetry);
+        }
         else
         {
-            SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[levelToLoad].pickaxePos.position);
+            SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[levelToLoad].pickaxePos.position, isRetry);
         }
 
-        if (FindObjectOfType<Gold>())
+        if (FindObjectOfType<Gold>() && !isRetry)
         {
             FindObjectOfType<Gold>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[levelToLoad].goldPos.position;
         }
+        else if (isRetry)
+        {
+            SetUpObject(goldObjectTransform, FindObjectOfType<Gold>().transform, levelList[levelToLoad].goldPos.position, isRetry);
+        }
         else
         {
-            SetUpObject(goldObjectTransform, goldPrefab, levelList[levelToLoad].goldPos.position);
+            SetUpObject(goldObjectTransform, goldPrefab, levelList[levelToLoad].goldPos.position, isRetry);
         }
     }
 
@@ -151,7 +158,7 @@ public class LevelManager : NetworkBehaviour
     private void MakePlayersReleaseObjectsClientRpc(ulong playerId, ClientRpcParams clientRpcParams = default)
     {
         Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
-        player.GetComponent<PlayerNetwork>().CallReleaseObject();
+        player.GetComponent<PlayerNetwork>().CallReleaseObject(true);
     }
 
     private void SetUpPlayersPos(int level, bool newLevel = true)
@@ -229,14 +236,19 @@ public class LevelManager : NetworkBehaviour
     //    //}
     //}
 
-    private void SetUpObject(Transform objectTransform, Transform objectPrefab, Vector3 setupPos)
+    private void SetUpObject(Transform objectTransform, Transform objectPrefab, Vector3 setupPos, bool isRetry = false)
     {
         //First we check if the pickaxe has already been spawned. If not, we spawn it.
-        if (objectTransform == null)
+        if (objectTransform == null && !isRetry)
         {
             objectTransform = Instantiate(objectPrefab);
             objectTransform.GetComponent<NetworkObject>().Spawn(true);
             //isTherePickaxe.Value = true;
+        }
+
+        if (isRetry)
+        {
+            objectTransform = objectPrefab;
         }
 
         //Then, we change its position. We do this so we can just move it if it's already there.
