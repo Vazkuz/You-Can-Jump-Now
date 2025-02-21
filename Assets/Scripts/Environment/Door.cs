@@ -16,8 +16,9 @@ public class Door : Breakable
 
     public static event Action OnAllPlayersFinish;
 
-    protected void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         finishPlayers = new NetworkList<ulong>();
     }
 
