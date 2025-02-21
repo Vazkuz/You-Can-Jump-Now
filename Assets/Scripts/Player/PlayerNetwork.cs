@@ -341,6 +341,7 @@ public class PlayerNetwork : NetworkBehaviour
     private void OnGrabObject(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
+        if (!IsGrounded()) return;
 
         canJump.Value = false;
 
