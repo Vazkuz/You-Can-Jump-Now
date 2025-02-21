@@ -61,7 +61,6 @@ public class Breakable : NetworkBehaviour
     protected virtual void OnHit(ulong player)
     {
         if (itsBroken.Value) return;
-
         health.Value--;
         if (health.Value <= 0)
         {
@@ -94,6 +93,7 @@ public class Breakable : NetworkBehaviour
         ResetSpriteRpc();
         health.Value = InitialHealth;
         itsBroken.Value = false;
+        PlayerNetwork.OnMining -= OnHit;
     }
 
     [Rpc(SendTo.Everyone)]
