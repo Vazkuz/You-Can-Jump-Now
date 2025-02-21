@@ -18,12 +18,17 @@ public class Breakable : NetworkBehaviour
 
     [SerializeField] private Sprite initialSprite;
 
+    protected virtual void Awake()
+    {
+        initialSprite = GetBreakableSpriteRenderer().sprite;
+        print($"This object ({name}) initial sprite is {initialSprite} with name {initialSprite.name}");
+    }
+
     //Start, on in-scene objects, occurs BEFORE OnNetworkSpawn.
     protected virtual void Start()
     {
         networkObject = GetComponent<NetworkObject>();
         InitialHealth = health.Value;
-        initialSprite = GetBreakableSpriteRenderer().sprite;
     }
 
     protected virtual SpriteRenderer GetBreakableSpriteRenderer()
