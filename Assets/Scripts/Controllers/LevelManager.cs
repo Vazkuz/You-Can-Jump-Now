@@ -35,7 +35,8 @@ public class LevelManager : NetworkBehaviour
     // Start is called before OnNetworkSpawn (on-scene object)
     protected void Start()
     {
-        LoadLevel();
+        LoadLevel(nLevel.Value);
+        //if(IsServer) nLevel.Value++;
         //PlayerNetwork.OnPlayerPrefabSpawn += AsyncSetupPlayerPos;
         Door.OnAllPlayersFinish += HandlePlayersFinishedLevel;
         DependencyMsg.gameObject.SetActive(false);
@@ -84,7 +85,8 @@ public class LevelManager : NetworkBehaviour
         // If all dependencies are correct, than the new level is loaded and nothing else happens.
         if(goldDependency && pickaxeDependency)
         {
-            LoadLevel();
+            if(IsServer) nLevel.Value++;
+            LoadLevel(nLevel.Value);
             return;
         }
 
@@ -92,44 +94,74 @@ public class LevelManager : NetworkBehaviour
         HandleFailedDependencyRPC(goldDependency, pickaxeDependency);
 
         // Finally, we "respawn" the players and clean the door info. (This triggers IF there's no Gold or Pickaxe).
-        SetUpPlayersPos(false);
+        SetUpPlayersPos(nLevel.Value, false);
         currentDoor.CleanFinishPlayers();
     }
 
-    private void LoadLevel()
+    private void LoadLevel(int levelToLoad, bool isRetry = false)
     {
         if (!IsServer) return;
         //LOADSCREEN FUNCTIONALITY GOES HERE (WHEN WE HAVE IT)
+        if (isRetry)
+        {
+            List<ulong> playersId = NetworkManager.Singleton.ConnectedClients.Keys.ToList();
+
+            foreach (ulong playerId in playersId)
+            {
+                ClientRpcParams clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { playerId }
+                    }
+                };
+
+                MakePlayersReleaseObjectsClientRpc(playerId, clientRpcParams);
+            }
+        }
+
         playersSetUp.Value = 0;
-        SetUpLevelRpc();
+        SetUpLevelRpc(levelToLoad, isRetry);
 
         //if (justConnecting) return;
 
-        SetUpPlayersPos();
+        SetUpPlayersPos(levelToLoad);
 
-        print($"Setting up grabbables last saved pos. Pickaxe: {levelList[nLevel.Value].pickaxePos.position}");
-        if (FindObjectOfType<Pickaxe>())
+        if (FindObjectOfType<Pickaxe>() && !isRetry)
         {
-            FindObjectOfType<Pickaxe>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[nLevel.Value].pickaxePos.position;
+            FindObjectOfType<Pickaxe>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[levelToLoad].pickaxePos.position;
+        }
+        else if (isRetry)
+        {
+            SetUpObject(pickaxeObjectTransform, FindObjectOfType<Pickaxe>().transform, levelList[levelToLoad].pickaxePos.position, isRetry);
         }
         else
         {
-            SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[nLevel.Value].pickaxePos.position);
+            SetUpObject(pickaxeObjectTransform, pickaxePrefab, levelList[levelToLoad].pickaxePos.position, isRetry);
         }
 
-        if (FindObjectOfType<Gold>())
+        if (FindObjectOfType<Gold>() && !isRetry)
         {
-            FindObjectOfType<Gold>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[nLevel.Value].goldPos.position;
+            FindObjectOfType<Gold>().GetComponent<Grabbable>().lastSavedPos.Value = levelList[levelToLoad].goldPos.position;
+        }
+        else if (isRetry)
+        {
+            SetUpObject(goldObjectTransform, FindObjectOfType<Gold>().transform, levelList[levelToLoad].goldPos.position, isRetry);
         }
         else
         {
-            SetUpObject(goldObjectTransform, goldPrefab, levelList[nLevel.Value].goldPos.position);
+            SetUpObject(goldObjectTransform, goldPrefab, levelList[levelToLoad].goldPos.position, isRetry);
         }
-
-        nLevel.Value++;
     }
 
-    private void SetUpPlayersPos(bool newLevel = true)
+    [ClientRpc]
+    private void MakePlayersReleaseObjectsClientRpc(ulong playerId, ClientRpcParams clientRpcParams = default)
+    {
+        Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
+        player.GetComponent<PlayerNetwork>().CallReleaseObject(true);
+    }
+
+    private void SetUpPlayersPos(int level, bool newLevel = true)
     {
         List<ulong> playersId = NetworkManager.Singleton.ConnectedClients.Keys.ToList();
 
@@ -140,18 +172,18 @@ public class LevelManager : NetworkBehaviour
             {
                 if (player.GetComponent<PlayerNetwork>().hasGold.Value)
                 {
-                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[0].position);
-                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[0].position;
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[0].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[0].position;
                 }
                 else if (player.GetComponent<PlayerNetwork>().hasPickaxe.Value)
                 {
-                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[1].position);
-                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[1].position;
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[1].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[1].position;
                 }
                 else
                 {
-                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[nLevel.Value].playersPos[playersSetUp.Value].position);
-                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[nLevel.Value].playersPos[playersSetUp.Value].position;
+                    player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[playersSetUp.Value].position);
+                    player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[playersSetUp.Value].position;
                 }
                 playersSetUp.Value++;
             }
@@ -164,14 +196,20 @@ public class LevelManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    private void SetUpLevelRpc()
+    private void SetUpLevelRpc(int levelToSetup, bool isRetry = false)
     {
-        Level currentLevel = levelList[nLevel.Value];
+        Level currentLevel = levelList[levelToSetup];
         currentDoor = currentLevel.door;
+        if(IsServer && isRetry) currentDoor.ResetInitialConditions();
         currentLevel.gameObject.SetActive(true);
         foreach (Level level in levelList)
         {
             if(level != currentLevel) level.gameObject.SetActive(false);
+        }
+
+        foreach(Mineral mineral in currentLevel.minerals)
+        {
+            mineral.ResetInitialConditions();
         }
         mainCamera.position = currentLevel.cameraPos.position;
     }
@@ -198,14 +236,19 @@ public class LevelManager : NetworkBehaviour
     //    //}
     //}
 
-    private void SetUpObject(Transform objectTransform, Transform objectPrefab, Vector3 setupPos)
+    private void SetUpObject(Transform objectTransform, Transform objectPrefab, Vector3 setupPos, bool isRetry = false)
     {
         //First we check if the pickaxe has already been spawned. If not, we spawn it.
-        if (objectTransform == null)
+        if (objectTransform == null && !isRetry)
         {
             objectTransform = Instantiate(objectPrefab);
             objectTransform.GetComponent<NetworkObject>().Spawn(true);
             //isTherePickaxe.Value = true;
+        }
+
+        if (isRetry)
+        {
+            objectTransform = objectPrefab;
         }
 
         //Then, we change its position. We do this so we can just move it if it's already there.
@@ -241,5 +284,10 @@ public class LevelManager : NetworkBehaviour
     protected void TurnOffMessageVisibility()
     {
         DependencyMsg.gameObject.SetActive(false);
+    }
+
+    public void ResetLevel()
+    {
+        LoadLevel(nLevel.Value, true);
     }
 }

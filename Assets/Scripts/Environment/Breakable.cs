@@ -16,11 +16,14 @@ public class Breakable : NetworkBehaviour
     [Tooltip("Break Sprites. Poner solo los de romper, el inicial no.")]
     [SerializeField] protected List<Sprite> breakSprites;
 
+    [SerializeField] private Sprite initialSprite;
+
     //Start, on in-scene objects, occurs BEFORE OnNetworkSpawn.
     protected virtual void Start()
     {
         networkObject = GetComponent<NetworkObject>();
         InitialHealth = health.Value;
+        initialSprite = GetBreakableSpriteRenderer().sprite;
     }
 
     protected virtual SpriteRenderer GetBreakableSpriteRenderer()
@@ -58,7 +61,6 @@ public class Breakable : NetworkBehaviour
     protected virtual void OnHit(ulong player)
     {
         if (itsBroken.Value) return;
-
         health.Value--;
         if (health.Value <= 0)
         {
@@ -84,4 +86,21 @@ public class Breakable : NetworkBehaviour
     {
         itsBroken.Value = true;
     }
+
+    public virtual void ResetInitialConditions()
+    {
+        if (!IsServer) return;
+        ResetSpriteRpc();
+        health.Value = InitialHealth;
+        itsBroken.Value = false;
+        PlayerNetwork.OnMining -= OnHit;
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void ResetSpriteRpc()
+    {
+        GetBreakableSpriteRenderer().sprite = initialSprite;
+        GetBreakableSpriteRenderer().enabled = true;
+    }
+
 }

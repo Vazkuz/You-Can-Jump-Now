@@ -388,17 +388,29 @@ public class PlayerNetwork : NetworkBehaviour
         grabbable.body.enabled = false;
     }
 
+    public void CallReleaseObject(bool isRetry)
+    {
+        if (!IsOwner && !isDebugScene) return;
+        if (!hasGold.Value && !hasPickaxe.Value) return;
+        OnReleaseObject_(isRetry);
+    }
+
     /// <summary>
     /// Method to release object (pickaxe or gold). Subscribed when the player has grabbed an object (gold or pickaxe).
     /// </summary>
     /// <param name="context"></param>
     private void OnReleaseObject(InputAction.CallbackContext context)
     {
+        OnReleaseObject_();
+    }
+
+    private void OnReleaseObject_(bool isRetry = false)
+    {
         if (!IsOwner && !isDebugScene) return;
 
         if (!IsServer)
         {
-            RequestReleaseObjectRpc(hand.transform.position);
+            RequestReleaseObjectRpc(hand.transform.position, isRetry);
         }
         else
         {
@@ -414,9 +426,9 @@ public class PlayerNetwork : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    private void RequestReleaseObjectRpc(Vector3 handPos)
+    private void RequestReleaseObjectRpc(Vector3 handPos, bool isRetry)
     {
-        grabbable.transform.position = handPos;
+        if(!isRetry) grabbable.transform.position = handPos;
         OnHideLocalGrabbable?.Invoke(grabbable.name);
         hand.GetComponent<SpriteRenderer>().sprite = null;
     }
