@@ -389,11 +389,15 @@ public class PlayerNetwork : NetworkBehaviour
         grabbable.body.enabled = false;
     }
 
-    public void CallReleaseObject(bool isRetry)
+    public void CallReleaseObject()
     {
         if (!IsOwner && !isDebugScene) return;
         if (!hasGold.Value && !hasPickaxe.Value) return;
-        OnReleaseObject_(isRetry);
+        Vector3 newObjectPos;
+        LevelManager levelManager = FindObjectOfType<LevelManager>();
+        if (hasPickaxe.Value) newObjectPos = levelManager.levelList[levelManager._nLevel].pickaxePos.transform.position;
+        else newObjectPos = levelManager.levelList[levelManager._nLevel].goldPos.transform.position;
+        OnReleaseObject_(newObjectPos);
     }
 
     /// <summary>
@@ -402,16 +406,16 @@ public class PlayerNetwork : NetworkBehaviour
     /// <param name="context"></param>
     private void OnReleaseObject(InputAction.CallbackContext context)
     {
-        OnReleaseObject_();
+        OnReleaseObject_(hand.transform.position);
     }
 
-    private void OnReleaseObject_(bool isRetry = false)
+    private void OnReleaseObject_(Vector3 newPos)
     {
         if (!IsOwner && !isDebugScene) return;
 
         if (!IsServer)
         {
-            RequestReleaseObjectRpc(hand.transform.position, isRetry);
+            RequestReleaseObjectRpc(newPos);
         }
         else
         {
@@ -427,11 +431,13 @@ public class PlayerNetwork : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    private void RequestReleaseObjectRpc(Vector3 handPos, bool isRetry)
+    private void RequestReleaseObjectRpc(Vector3 handPos)
     {
-        if(!isRetry) grabbable.transform.position = handPos;
+        print($"Soltando objeto, actualmente su posicion es {grabbable.transform.position}");
+        grabbable.transform.position = handPos;
         OnHideLocalGrabbable?.Invoke(grabbable.name);
         hand.GetComponent<SpriteRenderer>().sprite = null;
+        print($"Objeto soltado, su posicion ahora es {grabbable.transform.position}");
     }
 
     /// <summary>

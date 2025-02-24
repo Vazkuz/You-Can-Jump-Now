@@ -16,7 +16,7 @@ public class LevelManager : NetworkBehaviour
     public int _nLevel { get { return nLevel.Value; } private set { nLevel.Value = value; } }
     private NetworkVariable<int> nLevel = new NetworkVariable<int>(0);
     private NetworkVariable<int> playersSetUp = new NetworkVariable<int>(0);
-    [SerializeField] private List<Level> levelList;
+    [SerializeField] public List<Level> levelList;
     private Door currentDoor;
     [SerializeField] private Transform mainCamera;
     [SerializeField] private Transform pickaxePrefab;
@@ -31,6 +31,12 @@ public class LevelManager : NetworkBehaviour
     [SerializeField] private float depMsgTime = 2f;
 
     public static event Action OnStageFinish;
+
+    public enum GrabbableObject
+    {
+        Pickaxe,
+        Gold
+    }
     //private bool justConnecting = true;
     // Start is called before OnNetworkSpawn (on-scene object)
     protected void Start()
@@ -123,8 +129,6 @@ public class LevelManager : NetworkBehaviour
         playersSetUp.Value = 0;
         SetUpLevelRpc(levelToLoad, isRetry);
 
-        //if (justConnecting) return;
-
         SetUpPlayersPos(levelToLoad);
 
         if (FindObjectOfType<Pickaxe>() && !isRetry)
@@ -158,7 +162,7 @@ public class LevelManager : NetworkBehaviour
     private void MakePlayersReleaseObjectsClientRpc(ulong playerId, ClientRpcParams clientRpcParams = default)
     {
         Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
-        player.GetComponent<PlayerNetwork>().CallReleaseObject(true);
+        player.GetComponent<PlayerNetwork>().CallReleaseObject();
     }
 
     private void SetUpPlayersPos(int level, bool newLevel = true)
@@ -243,7 +247,6 @@ public class LevelManager : NetworkBehaviour
         {
             objectTransform = Instantiate(objectPrefab);
             objectTransform.GetComponent<NetworkObject>().Spawn(true);
-            //isTherePickaxe.Value = true;
         }
 
         if (isRetry)

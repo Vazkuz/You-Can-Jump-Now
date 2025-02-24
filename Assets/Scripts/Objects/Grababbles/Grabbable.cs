@@ -74,8 +74,8 @@ public class Grabbable : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void HandleGrabbablePhysicsRpc(bool isHidden)
     {
-        rb.isKinematic = isHidden;
         triggerCollider.enabled = !isHidden;
+        rb.isKinematic = isHidden;
         isParented = isHidden;
     }
 
