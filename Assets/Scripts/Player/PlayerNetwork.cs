@@ -172,8 +172,6 @@ public class PlayerNetwork : NetworkBehaviour
         {
             if (IsLocalPlayer)
             {
-                print("Trigger ENTER con Moving Platform.");
-                print($"New Parent: {FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>())}");
                 networkTransform.InLocalSpace = true;
                 transform.parent = collision.transform;
                 ReparentingRpc(FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>()));
@@ -221,7 +219,6 @@ public class PlayerNetwork : NetworkBehaviour
         {
             if (IsLocalPlayer)
             {
-                print("Trigger EXIT con Moving Platform.");
                 transform.parent = null;
                 networkTransform.InLocalSpace = false;
                 ReparentingRpc(-1);
@@ -262,14 +259,12 @@ public class PlayerNetwork : NetworkBehaviour
     [Rpc(SendTo.NotOwner)]
     private void ReparentingRpc(int newParent)
     {
-        print($"newParent es: {newParent}");
         if(newParent < 0)
         {
             transform.parent = null;
         }
         else
         {
-            print($"Emparentando al otro jugador a {FindObjectOfType<LevelManager>().targets[newParent].name}");
             transform.parent = FindObjectOfType<LevelManager>().targets[newParent].transform;
         }
     }
@@ -433,11 +428,9 @@ public class PlayerNetwork : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void RequestReleaseObjectRpc(Vector3 handPos)
     {
-        print($"Soltando objeto, actualmente su posicion es {grabbable.transform.position}");
         grabbable.transform.position = handPos;
         OnHideLocalGrabbable?.Invoke(grabbable.name);
         hand.GetComponent<SpriteRenderer>().sprite = null;
-        print($"Objeto soltado, su posicion ahora es {grabbable.transform.position}");
     }
 
     /// <summary>
