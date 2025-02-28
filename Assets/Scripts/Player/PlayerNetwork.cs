@@ -7,7 +7,13 @@ using Unity.Multiplayer.Samples.Utilities.ClientAuthority;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UnityEngine.GraphicsBuffer;
+
+public enum LastObjectGrabbed
+{
+    None,
+    Gold,
+    Pickaxe
+}
 
 public class PlayerNetwork : NetworkBehaviour
 {
@@ -57,6 +63,7 @@ public class PlayerNetwork : NetworkBehaviour
     [SerializeField] private GrabbedObject goldSO;
     public static event Action<ulong, string> OnShowLocalGrabbable;
     public static event Action<string> OnHideLocalGrabbable;
+    public NetworkVariable<LastObjectGrabbed> lastObject = new NetworkVariable<LastObjectGrabbed>(LastObjectGrabbed.None);
 
     [Header("Mineral Variables")]
     [SerializeField] private LayerMask breakableLayer;
