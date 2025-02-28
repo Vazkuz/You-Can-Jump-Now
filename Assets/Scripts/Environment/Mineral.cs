@@ -14,7 +14,8 @@ public class Mineral : Breakable
     {
         base.OnBreak(player); //eventualmente cambiar esto, no se destruye sino que se esconde mientras el jugador no salte o algo asi
         FinishMineRpc(player);
-        networkObject.Despawn(gameObject);
+        ToggleSpriteRpc(false);
+        //networkObject.Despawn(gameObject);
     }
 
     /// <summary>
@@ -25,5 +26,17 @@ public class Mineral : Breakable
     private void FinishMineRpc(ulong clientId)
     {
         OnFinishedMine?.Invoke(clientId);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void ToggleSpriteRpc(bool isActive)
+    {
+        GetComponent<SpriteRenderer>().enabled = isActive;
+    }
+
+    public override void ResetInitialConditions()
+    {
+        base.ResetInitialConditions();
+        ToggleSpriteRpc(true);
     }
 }

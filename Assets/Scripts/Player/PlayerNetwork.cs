@@ -70,6 +70,8 @@ public class PlayerNetwork : NetworkBehaviour
 
     [Header("Lobby Vars")]
     [SerializeField] private SpriteRenderer hostSign;
+    [SerializeField] private Sprite player1;
+    [SerializeField] private Sprite player2;
 
     [HideInInspector] public NetworkVariable<Vector3> lastSavedPos;
 
@@ -103,6 +105,16 @@ public class PlayerNetwork : NetworkBehaviour
     {
         base.OnNetworkSpawn();
         OnPlayerPrefabSpawn?.Invoke(OwnerClientId);
+
+        //if (!IsOwner) return;
+        if(OwnerClientId == 0)
+        {
+            characterBody.GetComponent<SpriteRenderer>().sprite = player1;
+        }
+        else
+        {
+            characterBody.GetComponent<SpriteRenderer>().sprite = player2;
+        }
     }
     protected void OnEnable()
     {
@@ -172,8 +184,6 @@ public class PlayerNetwork : NetworkBehaviour
         {
             if (IsLocalPlayer)
             {
-                print("Trigger ENTER con Moving Platform.");
-                print($"New Parent: {FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>())}");
                 networkTransform.InLocalSpace = true;
                 transform.parent = collision.transform;
                 ReparentingRpc(FindObjectOfType<LevelManager>().targets.IndexOf(collision.GetComponent<TriggerTarget>()));
@@ -221,7 +231,6 @@ public class PlayerNetwork : NetworkBehaviour
         {
             if (IsLocalPlayer)
             {
-                print("Trigger EXIT con Moving Platform.");
                 transform.parent = null;
                 networkTransform.InLocalSpace = false;
                 ReparentingRpc(-1);
@@ -262,14 +271,12 @@ public class PlayerNetwork : NetworkBehaviour
     [Rpc(SendTo.NotOwner)]
     private void ReparentingRpc(int newParent)
     {
-        print($"newParent es: {newParent}");
         if(newParent < 0)
         {
             transform.parent = null;
         }
         else
         {
-            print($"Emparentando al otro jugador a {FindObjectOfType<LevelManager>().targets[newParent].name}");
             transform.parent = FindObjectOfType<LevelManager>().targets[newParent].transform;
         }
     }
@@ -341,6 +348,7 @@ public class PlayerNetwork : NetworkBehaviour
     private void OnGrabObject(InputAction.CallbackContext context)
     {
         if (!IsOwner && !isDebugScene) return;
+        if (!IsGrounded()) return;
 
         canJump.Value = false;
 
@@ -388,11 +396,15 @@ public class PlayerNetwork : NetworkBehaviour
         grabbable.body.enabled = false;
     }
 
-    public void CallReleaseObject(bool isRetry)
+    public void CallReleaseObject()
     {
         if (!IsOwner && !isDebugScene) return;
         if (!hasGold.Value && !hasPickaxe.Value) return;
-        OnReleaseObject_(isRetry);
+        Vector3 newObjectPos;
+        LevelManager levelManager = FindObjectOfType<LevelManager>();
+        if (hasPickaxe.Value) newObjectPos = levelManager.levelList[levelManager._nLevel].pickaxePos.transform.position;
+        else newObjectPos = levelManager.levelList[levelManager._nLevel].goldPos.transform.position;
+        OnReleaseObject_(newObjectPos);
     }
 
     /// <summary>
@@ -401,16 +413,16 @@ public class PlayerNetwork : NetworkBehaviour
     /// <param name="context"></param>
     private void OnReleaseObject(InputAction.CallbackContext context)
     {
-        OnReleaseObject_();
+        OnReleaseObject_(hand.transform.position);
     }
 
-    private void OnReleaseObject_(bool isRetry = false)
+    private void OnReleaseObject_(Vector3 newPos)
     {
         if (!IsOwner && !isDebugScene) return;
 
         if (!IsServer)
         {
-            RequestReleaseObjectRpc(hand.transform.position, isRetry);
+            RequestReleaseObjectRpc(newPos);
         }
         else
         {
@@ -426,9 +438,9 @@ public class PlayerNetwork : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    private void RequestReleaseObjectRpc(Vector3 handPos, bool isRetry)
+    private void RequestReleaseObjectRpc(Vector3 handPos)
     {
-        if(!isRetry) grabbable.transform.position = handPos;
+        grabbable.transform.position = handPos;
         OnHideLocalGrabbable?.Invoke(grabbable.name);
         hand.GetComponent<SpriteRenderer>().sprite = null;
     }

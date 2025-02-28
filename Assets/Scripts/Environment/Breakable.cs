@@ -95,10 +95,10 @@ public class Breakable : NetworkBehaviour
     public virtual void ResetInitialConditions()
     {
         if (!IsServer) return;
+        PlayerNetwork.OnMining -= OnHit;
         ResetSpriteRpc();
         health.Value = InitialHealth;
         itsBroken.Value = false;
-        PlayerNetwork.OnMining -= OnHit;
     }
 
     [Rpc(SendTo.Everyone)]
