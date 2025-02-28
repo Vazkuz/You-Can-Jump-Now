@@ -70,6 +70,8 @@ public class PlayerNetwork : NetworkBehaviour
 
     [Header("Lobby Vars")]
     [SerializeField] private SpriteRenderer hostSign;
+    [SerializeField] private Sprite player1;
+    [SerializeField] private Sprite player2;
 
     [HideInInspector] public NetworkVariable<Vector3> lastSavedPos;
 
@@ -103,6 +105,16 @@ public class PlayerNetwork : NetworkBehaviour
     {
         base.OnNetworkSpawn();
         OnPlayerPrefabSpawn?.Invoke(OwnerClientId);
+
+        //if (!IsOwner) return;
+        if(OwnerClientId == 0)
+        {
+            characterBody.GetComponent<SpriteRenderer>().sprite = player1;
+        }
+        else
+        {
+            characterBody.GetComponent<SpriteRenderer>().sprite = player2;
+        }
     }
     protected void OnEnable()
     {
