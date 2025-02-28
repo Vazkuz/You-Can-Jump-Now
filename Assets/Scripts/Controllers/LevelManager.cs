@@ -129,7 +129,7 @@ public class LevelManager : NetworkBehaviour
         playersSetUp.Value = 0;
         SetUpLevelRpc(levelToLoad, isRetry);
 
-        SetUpPlayersPos(levelToLoad);
+        SetUpPlayersPos(levelToLoad, isRetry);
 
         if (FindObjectOfType<Pickaxe>() && !isRetry)
         {
@@ -165,21 +165,21 @@ public class LevelManager : NetworkBehaviour
         player.GetComponent<PlayerNetwork>().CallReleaseObject();
     }
 
-    private void SetUpPlayersPos(int level, bool newLevel = true)
+    private void SetUpPlayersPos(int level, bool isRetry = false, bool newLevel = true)
     {
         List<ulong> playersId = NetworkManager.Singleton.ConnectedClients.Keys.ToList();
 
         foreach (ulong playerId in playersId)
         {
             Transform player = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(playerId).GetComponent<Transform>();
-            if (newLevel)
+            if (isRetry)
             {
-                if (player.GetComponent<PlayerNetwork>().hasGold.Value)
+                if (player.GetComponent<PlayerNetwork>().lastObject.Value == LastObjectGrabbed.Gold)
                 {
                     player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[0].position);
                     player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[0].position;
                 }
-                else if (player.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+                else if (player.GetComponent<PlayerNetwork>().lastObject.Value == LastObjectGrabbed.Pickaxe)
                 {
                     player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[1].position);
                     player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[1].position;
@@ -189,12 +189,37 @@ public class LevelManager : NetworkBehaviour
                     player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[playersSetUp.Value].position);
                     player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[playersSetUp.Value].position;
                 }
+
                 playersSetUp.Value++;
+                continue;
+            }
+
+            if (!newLevel)
+            {
+                player.GetComponent<PlayerNetwork>().SetUpPlayer(player.transform.position);
+                continue;
+            }
+
+
+            if (player.GetComponent<PlayerNetwork>().hasGold.Value)
+            {
+                player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[0].position);
+                player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[0].position;
+                player.GetComponent<PlayerNetwork>().lastObject.Value = LastObjectGrabbed.Gold;
+            }
+            else if (player.GetComponent<PlayerNetwork>().hasPickaxe.Value)
+            {
+                player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[1].position);
+                player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[1].position;
+                player.GetComponent<PlayerNetwork>().lastObject.Value = LastObjectGrabbed.Pickaxe;
             }
             else
             {
-                player.GetComponent<PlayerNetwork>().SetUpPlayer(player.transform.position);
+                player.GetComponent<PlayerNetwork>().SetUpPlayer(levelList[level].playersPos[playersSetUp.Value].position);
+                player.GetComponent<PlayerNetwork>().lastSavedPos.Value = levelList[level].playersPos[playersSetUp.Value].position;
+                player.GetComponent<PlayerNetwork>().lastObject.Value = LastObjectGrabbed.None;
             }
+            playersSetUp.Value++;
         }
 
     }
